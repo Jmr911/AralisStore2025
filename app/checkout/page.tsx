@@ -8,38 +8,69 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCart } from "@/components/cart-provider"
 import { useAuth } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
 import { CheckCircle2, Loader2 } from "lucide-react"
 import Image from "next/image"
 
+const provincias = [
+  { value: "san-jose", label: "San José" },
+  { value: "alajuela", label: "Alajuela" },
+  { value: "cartago", label: "Cartago" },
+  { value: "heredia", label: "Heredia" },
+  { value: "guanacaste", label: "Guanacaste" },
+  { value: "puntarenas", label: "Puntarenas" },
+  { value: "limon", label: "Limón" }
+]
+
+// Cantones por provincia de Costa Rica
+const cantonesPorProvincia: Record<string, string[]> = {
+  "san-jose": ["San José", "Escazú", "Desamparados", "Puriscal", "Tarrazú", "Aserrí", "Mora", "Goicoechea", "Santa Ana", "Alajuelita", "Vázquez de Coronado", "Acosta", "Tibás", "Moravia", "Montes de Oca", "Turrubares", "Dota", "Curridabat", "Pérez Zeledón", "León Cortés Castro"],
+  "alajuela": ["Alajuela", "San Ramón", "Grecia", "San Mateo", "Atenas", "Naranjo", "Palmares", "Poás", "Orotina", "San Carlos", "Zarcero", "Sarchí", "Upala", "Los Chiles", "Guatuso", "Río Cuarto"],
+  "cartago": ["Cartago", "Paraíso", "La Unión", "Jiménez", "Turrialba", "Alvarado", "Oreamuno", "El Guarco"],
+  "heredia": ["Heredia", "Barva", "Santo Domingo", "Santa Bárbara", "San Rafael", "San Isidro", "Belén", "Flores", "San Pablo", "Sarapiquí"],
+  "guanacaste": ["Liberia", "Nicoya", "Santa Cruz", "Bagaces", "Carrillo", "Cañas", "Abangares", "Tilarán", "Nandayure", "La Cruz", "Hojancha"],
+  "puntarenas": ["Puntarenas", "Esparza", "Buenos Aires", "Montes de Oro", "Osa", "Quepos", "Golfito", "Coto Brus", "Parrita", "Corredores", "Garabito"],
+  "limon": ["Limón", "Pococí", "Siquirres", "Talamanca", "Matina", "Guácimo"]
+}
+
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
   const { user } = useAuth()
   const router = useRouter()
   
+  // Datos del formulario de contacto
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
     telefono: "",
-    direccion: "",
     notas: ""
   })
   
-  const [retiroEnLocal, setRetiroEnLocal] = useState(false)
+  const [tipoEntrega, setTipoEntrega] = useState<"retiro" | "envio">("retiro")
+  
+  // Datos de ubicación para envío
+  const [datosEnvio, setDatosEnvio] = useState({
+    provincia: "",
+    canton: "",
+    distrito: "",
+    direccionExacta: ""
+  })
+  
+  const [cantonesDisponibles, setCantonesDisponibles] = useState<string[]>([])
   const [cargando, setCargando] = useState(false)
   const [pedidoCompletado, setPedidoCompletado] = useState(false)
   const [numeroPedido, setNumeroPedido] = useState("")
   const [mounted, setMounted] = useState(false)
 
-  // Espera a que el componente esté montado en el cliente
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Autocompleta el formulario con los datos del usuario si está logueado
+  // Autocompletar con datos del usuario logueado
   useEffect(() => {
     if (user) {
       setFormData(prev => ({
@@ -50,12 +81,26 @@ export default function CheckoutPage() {
     }
   }, [user])
 
-  // Redirige al carrito si está vacío (solo después de montar)
+  // Redirigir si el carrito está vacío
   useEffect(() => {
     if (mounted && items.length === 0 && !pedidoCompletado) {
       router.push("/carrito")
     }
   }, [mounted, items.length, pedidoCompletado, router])
+
+  // Actualizar cantones según provincia seleccionada
+  useEffect(() => {
+    if (datosEnvio.provincia) {
+      setCantonesDisponibles(cantonesPorProvincia[datosEnvio.provincia] || [])
+      setDatosEnvio(prev => ({
+        ...prev,
+        canton: "",
+        distrito: ""
+      }))
+    } else {
+      setCantonesDisponibles([])
+    }
+  }, [datosEnvio.provincia])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -64,12 +109,34 @@ export default function CheckoutPage() {
     })
   }
 
-  // Procesa y envía el pedido al servidor
+  const handleEnvioChange = (campo: string, valor: string) => {
+    setDatosEnvio({
+      ...datosEnvio,
+      [campo]: valor
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validar campos de envío si es necesario
+    if (tipoEntrega === "envio") {
+      if (!datosEnvio.provincia || !datosEnvio.canton || !datosEnvio.distrito || !datosEnvio.direccionExacta.trim()) {
+        alert("Por favor complete todos los campos de envío")
+        return
+      }
+    }
+
     setCargando(true)
 
     try {
+      // Preparar dirección completa
+      let direccionCompleta = "Retiro en local"
+      if (tipoEntrega === "envio") {
+        const provinciaLabel = provincias.find(p => p.value === datosEnvio.provincia)?.label || ""
+        direccionCompleta = `${provinciaLabel}, ${datosEnvio.canton}, ${datosEnvio.distrito} - ${datosEnvio.direccionExacta}`
+      }
+
       const response = await fetch("/api/pedidos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,9 +146,10 @@ export default function CheckoutPage() {
           userName: formData.nombre,
           userEmail: formData.email,
           telefonoContacto: formData.telefono,
-          direccionEnvio: retiroEnLocal ? "Retiro en local" : formData.direccion,
+          direccionEnvio: direccionCompleta,
           notasAdicionales: formData.notas,
-          tipoEntrega: retiroEnLocal ? "retiro" : "envio"
+          tipoEntrega: tipoEntrega,
+          datosEnvio: tipoEntrega === "envio" ? datosEnvio : null
         })
       })
 
@@ -91,7 +159,7 @@ export default function CheckoutPage() {
         setNumeroPedido(resultado.pedido.numeroPedido)
         setPedidoCompletado(true)
         clearCart()
-        enviarWhatsApp(resultado.pedido)
+        enviarWhatsApp(resultado.pedido, direccionCompleta)
         if (typeof window !== 'undefined') {
           window.scrollTo(0, 0)
         }
@@ -106,8 +174,8 @@ export default function CheckoutPage() {
     }
   }
 
-  // Crea el mensaje de WhatsApp con los detalles del pedido
-  const enviarWhatsApp = (pedido: any) => {
+  // Enviar notificación por WhatsApp
+  const enviarWhatsApp = (pedido: any, direccionCompleta: string) => {
     if (typeof window === 'undefined') return
 
     let mensaje = `*Nuevo Pedido #${pedido.numeroPedido}*\n\n`
@@ -115,10 +183,11 @@ export default function CheckoutPage() {
     mensaje += `*Email:* ${formData.email}\n`
     mensaje += `*Teléfono:* ${formData.telefono}\n`
     
-    if (retiroEnLocal) {
+    if (tipoEntrega === "retiro") {
       mensaje += `*Entrega:* Retiro en local\n\n`
     } else {
-      mensaje += `*Dirección:* ${formData.direccion}\n\n`
+      mensaje += `*Entrega:* Envío a domicilio\n`
+      mensaje += `*Dirección:* ${direccionCompleta}\n\n`
     }
     
     mensaje += `*Productos:*\n`
@@ -142,12 +211,11 @@ export default function CheckoutPage() {
     window.open(`https://wa.me/${numeroWhatsApp}?text=${urlMensaje}`, "_blank")
   }
 
-  // Muestra un loader mientras se monta el componente
   if (!mounted) {
     return null
   }
 
-  // Pantalla de confirmación de pedido exitoso
+  // Pantalla de confirmación de pedido
   if (pedidoCompletado) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -180,28 +248,27 @@ export default function CheckoutPage() {
     )
   }
 
-  // Formulario principal de checkout
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
-        <section className="py-12 md:py-16 bg-secondary/30">
+        <section className="py-16 md:py-20 bg-secondary/30">
           <div className="container mx-auto px-4">
             <h1 className="font-serif text-4xl md:text-5xl font-bold text-center">Finalizar Compra</h1>
           </div>
         </section>
 
-        <section className="py-12">
+        <section className="py-4">
           <div className="container mx-auto px-4 max-w-5xl">
             <div className="grid lg:grid-cols-3 gap-8">
-              {/* Formulario de datos del cliente */}
+              {/* Formulario de contacto y envío */}
               <div className="lg:col-span-2">
                 <Card>
                   <CardHeader>
                     <CardTitle>Información de Contacto</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                       <div>
                         <Label htmlFor="nombre">Nombre completo *</Label>
                         <Input
@@ -240,34 +307,100 @@ export default function CheckoutPage() {
                         />
                       </div>
 
-                      {/* Opción de retiro en local */}
-                      <div className="flex items-center space-x-2 p-4 border rounded-md">
-                        <Checkbox
-                          id="retiro"
-                          checked={retiroEnLocal}
-                          onCheckedChange={(checked) => setRetiroEnLocal(checked as boolean)}
-                        />
-                        <label
-                          htmlFor="retiro"
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          Retiro en local (sin costo de envío)
-                        </label>
+                      <div className="space-y-3">
+                        <Label>Método de entrega *</Label>
+                        <RadioGroup value={tipoEntrega} onValueChange={(value) => setTipoEntrega(value as "retiro" | "envio")}>
+                          <div className="flex items-center space-x-2 p-4 border rounded-md transition-colors cursor-pointer hover:border-stone-300" onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d4c5a9'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                            <RadioGroupItem value="retiro" id="retiro" />
+                            <label
+                              htmlFor="retiro"
+                              className="text-sm font-medium leading-none cursor-pointer flex-1"
+                            >
+                              Retiro en local (sin costo de envío)
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2 p-4 border rounded-md transition-colors cursor-pointer hover:border-stone-300" onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d4c5a9'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                            <RadioGroupItem value="envio" id="envio" />
+                            <label
+                              htmlFor="envio"
+                              className="text-sm font-medium leading-none cursor-pointer flex-1"
+                            >
+                              Envío a domicilio
+                            </label>
+                          </div>
+                        </RadioGroup>
                       </div>
 
-                      {/* Dirección de envío (solo si no es retiro en local) */}
-                      {!retiroEnLocal && (
-                        <div>
-                          <Label htmlFor="direccion">Dirección de envío *</Label>
-                          <Textarea
-                            id="direccion"
-                            name="direccion"
-                            value={formData.direccion}
-                            onChange={handleChange}
-                            required
-                            placeholder="Dirección completa para el envío"
-                            rows={3}
-                          />
+                      {tipoEntrega === "envio" && (
+                        <div className="space-y-4 p-4 border rounded-md bg-muted/50">
+                          <h3 className="font-medium text-sm">Datos de envío</h3>
+                          
+                          <div>
+                            <Label htmlFor="provincia">Provincia *</Label>
+                            <Select
+                              value={datosEnvio.provincia}
+                              onValueChange={(value) => handleEnvioChange("provincia", value)}
+                              required
+                            >
+                              <SelectTrigger id="provincia">
+                                <SelectValue placeholder="Seleccione una provincia" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {provincias.map((provincia) => (
+                                  <SelectItem key={provincia.value} value={provincia.value}>
+                                    {provincia.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="canton">Cantón *</Label>
+                            <Select
+                              value={datosEnvio.canton}
+                              onValueChange={(value) => handleEnvioChange("canton", value)}
+                              disabled={!datosEnvio.provincia}
+                              required
+                            >
+                              <SelectTrigger id="canton">
+                                <SelectValue placeholder="Seleccione un cantón" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {cantonesDisponibles.map((canton) => (
+                                  <SelectItem key={canton} value={canton}>
+                                    {canton}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="distrito">Distrito *</Label>
+                            <Input
+                              id="distrito"
+                              value={datosEnvio.distrito}
+                              onChange={(e) => handleEnvioChange("distrito", e.target.value)}
+                              required
+                              placeholder="Nombre del distrito"
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="direccionExacta">Dirección exacta *</Label>
+                            <Textarea
+                              id="direccionExacta"
+                              value={datosEnvio.direccionExacta}
+                              onChange={(e) => handleEnvioChange("direccionExacta", e.target.value)}
+                              required
+                              placeholder="Ej: De la Iglesia Católica, 200m norte, casa color verde con portón negro"
+                              rows={3}
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Incluye referencias claras para facilitar la entrega
+                            </p>
+                          </div>
                         </div>
                       )}
 
@@ -340,7 +473,7 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Envío</span>
-                        <span>{retiroEnLocal ? "Gratis (Retiro)" : "Por calcular"}</span>
+                        <span>{tipoEntrega === "retiro" ? "Gratis (Retiro)" : "Por calcular"}</span>
                       </div>
                     </div>
 

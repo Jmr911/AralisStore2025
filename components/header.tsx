@@ -15,7 +15,7 @@ export function Header() {
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
 
-  // ✅ NUEVO: Determinar la URL de pedidos según el rol
+  // Mostramos diferentes enlaces según si es admin o usuario normal
   const pedidosUrl = user?.role === 'admin' ? '/admin/pedidos' : '/mis-pedidos'
   const pedidosTexto = user?.role === 'admin' ? 'Gestión de Pedidos' : 'Mis Pedidos'
 
@@ -23,11 +23,11 @@ export function Header() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
 
-      // Show header when at top of page
+      // Mostramos el header cuando está en la parte superior
       if (currentScrollY < 10) {
         setIsVisible(true)
       }
-      // Hide header when scrolling down, show when scrolling up
+      // Ocultamos cuando hace scroll hacia abajo, mostramos cuando sube
       else if (currentScrollY > lastScrollY) {
         setIsVisible(false)
       } else {
@@ -49,7 +49,7 @@ export function Header() {
     >
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-          {/* Logo - Izquierda */}
+          {/* Logo */}
           <Link href="/" className="flex items-center justify-start">
             <Image
               src="/aralis-logo-sin-slogan.png"
@@ -60,7 +60,7 @@ export function Header() {
             />
           </Link>
 
-          {/* Desktop Navigation - Centro */}
+          {/* Menú de navegación en desktop */}
           <nav className="hidden md:flex items-center gap-8 justify-center">
             <Link href="/catalogo" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">
               Catálogo
@@ -73,13 +73,13 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* Actions - Derecha */}
+          {/* Iconos de acciones */}
           <div className="flex items-center gap-2 justify-end">
             {user ? (
               <div className="hidden md:flex items-center gap-2">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">Hola, {user.name}</span>
                 
-                {/* ✅ ACTUALIZADO: Botón dinámico según rol */}
+                {/* Botón de pedidos (cambia según el rol) */}
                 <Link href={pedidosUrl}>
                   <Button variant="ghost" size="sm">
                     {user.role === 'admin' ? (
@@ -101,6 +101,7 @@ export function Header() {
               </Link>
             )}
 
+            {/* Carrito de compras */}
             <Link href="/carrito" className="relative">
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="h-5 w-5" />
@@ -112,7 +113,16 @@ export function Header() {
               </Button>
             </Link>
 
-            {/* Ícono de Cambiar Contraseña */}
+            {/* Botón para editar perfil */}
+            {user && (
+              <Link href="/perfil/editar" title="Editar perfil" className="hidden md:block">
+                <Button variant="ghost" size="icon">
+                  <User className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
+
+            {/* Botón para cambiar contraseña */}
             {user && (
               <Link href="/perfil/cambiar-contrasena" title="Cambiar contraseña" className="hidden md:block">
                 <Button variant="ghost" size="icon">
@@ -121,13 +131,14 @@ export function Header() {
               </Link>
             )}
 
-            {/* Ícono de Cerrar Sesión */}
+            {/* Botón de cerrar sesión */}
             {user && (
               <Button variant="ghost" size="icon" onClick={logout} title="Cerrar sesión" className="hidden md:flex">
                 <LogOut className="h-4 w-4" />
               </Button>
             )}
 
+            {/* Botón del menú móvil */}
             <Button
               variant="ghost"
               size="icon"
@@ -139,7 +150,7 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Menú móvil */}
         {mobileMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 flex flex-col gap-4 border-t pt-4">
             <Link href="/catalogo" className="text-sm font-medium hover:text-primary transition-colors">
@@ -155,7 +166,15 @@ export function Header() {
               <>
                 <span className="text-sm text-muted-foreground">Hola, {user.name}</span>
                 
-                {/* Cambiar Contraseña en móvil */}
+                {/* Editar perfil en móvil */}
+                <Link href="/perfil/editar">
+                  <Button variant="ghost" size="sm" className="justify-start w-full">
+                    <User className="h-4 w-4 mr-2" />
+                    Editar Perfil
+                  </Button>
+                </Link>
+                
+                {/* Cambiar contraseña en móvil */}
                 <Link href="/perfil/cambiar-contrasena">
                   <Button variant="ghost" size="sm" className="justify-start w-full">
                     <KeyRound className="h-4 w-4 mr-2" />
@@ -163,7 +182,7 @@ export function Header() {
                   </Button>
                 </Link>
                 
-                {/* ✅ ACTUALIZADO: Botón dinámico en móvil */}
+                {/* Pedidos en móvil (cambia según el rol) */}
                 <Link href={pedidosUrl}>
                   <Button variant="ghost" size="sm" className="justify-start w-full">
                     {user.role === 'admin' ? (
@@ -175,6 +194,7 @@ export function Header() {
                   </Button>
                 </Link>
                 
+                {/* Cerrar sesión en móvil */}
                 <Button variant="ghost" size="sm" onClick={logout} className="justify-start">
                   <LogOut className="h-4 w-4 mr-2" />
                   Cerrar sesión

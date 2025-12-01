@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/components/auth-provider"
-import PasswordInput from "@/components/PasswordInput"
+import { CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -23,13 +23,12 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
-// Componente interno que usa useSearchParams
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login, register } = useAuth()
   
-  // Estados para controlar las pestañas y formularios
+  // Estados del formulario
   const [activeTab, setActiveTab] = useState("login")
   const [loginData, setLoginData] = useState({ email: "", password: "" })
   const [registerData, setRegisterData] = useState({
@@ -41,8 +40,11 @@ function LoginContent() {
   const [error, setError] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
   const [sessionExpiredMessage, setSessionExpiredMessage] = useState("")
+  const [mostrarLoginPassword, setMostrarLoginPassword] = useState(false)
+  const [mostrarRegisterPassword, setMostrarRegisterPassword] = useState(false)
+  const [erroresValidacion, setErroresValidacion] = useState<string[]>([])
 
-  // Verifica si hay parámetros de sesión expirada en la URL
+  // Detectar si viene de una sesión expirada
   useEffect(() => {
     const errorParam = searchParams.get("error")
     const messageParam = searchParams.get("message")
@@ -51,10 +53,56 @@ function LoginContent() {
       const message = messageParam || "Tu sesión ha expirado por inactividad. Por favor, inicia sesión nuevamente."
       setSessionExpiredMessage(message)
       
-      // Auto-ocultar el mensaje después de 10 segundos
       setTimeout(() => setSessionExpiredMessage(""), 10000)
     }
   }, [searchParams])
+
+  // Validar contraseña mientras el usuario escribe
+  useEffect(() => {
+    if (!registerData.password) {
+      setErroresValidacion([])
+      return
+    }
+
+    const errores: string[] = []
+
+    if (registerData.password.length < 8) {
+      errores.push('Mínimo 8 caracteres')
+    }
+    if (!/[A-Z]/.test(registerData.password)) {
+      errores.push('Al menos una letra mayúscula')
+    }
+    if (!/[a-z]/.test(registerData.password)) {
+      errores.push('Al menos una letra minúscula')
+    }
+    if (!/[0-9]/.test(registerData.password)) {
+      errores.push('Al menos un número')
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(registerData.password)) {
+      errores.push('Al menos un carácter especial (!@#$%^&*...)')
+    }
+
+    setErroresValidacion(errores)
+  }, [registerData.password])
+
+  // Calcular nivel de seguridad de la contraseña
+  const calcularFortaleza = (): { nivel: number; texto: string; color: string } => {
+    if (!registerData.password) return { nivel: 0, texto: '', color: 'bg-muted' }
+
+    let puntos = 0
+    if (registerData.password.length >= 8) puntos++
+    if (registerData.password.length >= 12) puntos++
+    if (/[A-Z]/.test(registerData.password)) puntos++
+    if (/[a-z]/.test(registerData.password)) puntos++
+    if (/[0-9]/.test(registerData.password)) puntos++
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(registerData.password)) puntos++
+
+    if (puntos <= 2) return { nivel: 33, texto: 'Débil', color: 'bg-destructive' }
+    if (puntos <= 4) return { nivel: 66, texto: 'Media', color: 'bg-yellow-500' }
+    return { nivel: 100, texto: 'Fuerte', color: 'bg-green-500' }
+  }
+
+  const fortaleza = calcularFortaleza()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,7 +116,6 @@ function LoginContent() {
       setSuccessMessage("Inicio de sesión exitoso")
       setLoginData({ email: "", password: "" })
 
-      // Redirige al inicio después de login exitoso
       setTimeout(() => {
         router.push("/")
         router.refresh()
@@ -87,15 +134,20 @@ function LoginContent() {
     setSuccessMessage("")
     setSessionExpiredMessage("")
 
+    if (erroresValidacion.length > 0) {
+      setError('Por favor, cumple con todos los requisitos de contraseña')
+      setLoading(false)
+      return
+    }
+
     try {
       await register(registerData.name, registerData.email, registerData.password)
       setSuccessMessage("Cuenta creada correctamente. Ahora puedes iniciar sesión.")
 
-      // Guarda el email para pre-llenarlo en el formulario de login
       const registeredEmail = registerData.email
       setRegisterData({ name: "", email: "", password: "" })
 
-      // Cambia automáticamente a la pestaña de login
+      // Cambiar a login con el email ya lleno
       setTimeout(() => {
         setSuccessMessage("")
         setLoginData({ email: registeredEmail, password: "" })
@@ -113,7 +165,7 @@ function LoginContent() {
       <Header />
       <main className="flex-1 flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md space-y-4">
-          {/* Alerta de sesión expirada */}
+          {/* Banner de sesión expirada */}
           {sessionExpiredMessage && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm">
               <div className="flex items-start">
@@ -171,7 +223,7 @@ function LoginContent() {
                   <TabsTrigger value="register">Registrarse</TabsTrigger>
                 </TabsList>
 
-                {/* Formulario de inicio de sesión */}
+                {/* Tab de inicio de sesión */}
                 <TabsContent value="login">
                   <form onSubmit={handleLogin} className="space-y-4 mt-4">
                     <div className="space-y-2">
@@ -188,19 +240,33 @@ function LoginContent() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="login-password">Contraseña</Label>
-                      <PasswordInput
-                        id="login-password"
-                        name="password"
-                        value={loginData.password}
-                        onChange={(e) =>
-                          setLoginData({
-                            ...loginData,
-                            password: e.target.value,
-                          })
-                        }
-                        required
-                        placeholder="Ingresa tu contraseña"
-                      />
+                      <div className="relative">
+                        <Input
+                          id="login-password"
+                          type={mostrarLoginPassword ? 'text' : 'password'}
+                          required
+                          value={loginData.password}
+                          onChange={(e) =>
+                            setLoginData({
+                              ...loginData,
+                              password: e.target.value,
+                            })
+                          }
+                          placeholder="Ingresa tu contraseña"
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMostrarLoginPassword(!mostrarLoginPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                          {mostrarLoginPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -226,7 +292,7 @@ function LoginContent() {
                   </form>
                 </TabsContent>
 
-                {/* Formulario de registro */}
+                {/* Tab de registro */}
                 <TabsContent value="register">
                   <form onSubmit={handleRegister} className="space-y-4 mt-4">
                     <div className="space-y-2">
@@ -260,19 +326,76 @@ function LoginContent() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="register-password">Contraseña</Label>
-                      <PasswordInput
-                        id="register-password"
-                        name="password"
-                        value={registerData.password}
-                        onChange={(e) =>
-                          setRegisterData({
-                            ...registerData,
-                            password: e.target.value,
-                          })
-                        }
-                        required
-                        placeholder="Ingresa tu contraseña"
-                      />
+                      <div className="relative">
+                        <Input
+                          id="register-password"
+                          type={mostrarRegisterPassword ? 'text' : 'password'}
+                          required
+                          value={registerData.password}
+                          onChange={(e) =>
+                            setRegisterData({
+                              ...registerData,
+                              password: e.target.value,
+                            })
+                          }
+                          placeholder="Crea una contraseña segura"
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMostrarRegisterPassword(!mostrarRegisterPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                          {mostrarRegisterPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Indicador de fortaleza */}
+                      {registerData.password && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Fortaleza:</span>
+                            <span className={`font-medium ${
+                              fortaleza.nivel === 33 ? 'text-red-600' : 
+                              fortaleza.nivel === 66 ? 'text-yellow-600' : 
+                              'text-green-600'
+                            }`}>
+                              {fortaleza.texto}
+                            </span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full transition-all duration-300 ${fortaleza.color}`}
+                              style={{ width: `${fortaleza.nivel}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Mostrar requisitos pendientes */}
+                      {registerData.password && erroresValidacion.length > 0 && (
+                        <div className="space-y-1 mt-2">
+                          <p className="text-xs font-medium text-muted-foreground">Requisitos faltantes:</p>
+                          {erroresValidacion.map((error, index) => (
+                            <div key={index} className="flex items-center text-xs text-destructive">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              {error}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Checkmark cuando todo está bien */}
+                      {registerData.password && erroresValidacion.length === 0 && (
+                        <div className="flex items-center text-xs text-green-600 mt-2">
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          <span>Todos los requisitos cumplidos</span>
+                        </div>
+                      )}
                     </div>
 
                     {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -282,9 +405,17 @@ function LoginContent() {
                       </p>
                     )}
 
-                    <Button type="submit" className="w-full" disabled={loading}>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={loading || erroresValidacion.length > 0 || !registerData.password}
+                    >
                       {loading ? "Creando cuenta..." : "Crear cuenta"}
                     </Button>
+
+                    <p className="text-xs text-muted-foreground text-center">
+                      Usa al menos 8 caracteres con mayúsculas, minúsculas, números y símbolos
+                    </p>
                   </form>
                 </TabsContent>
               </Tabs>
@@ -297,7 +428,6 @@ function LoginContent() {
   )
 }
 
-// Componente principal que envuelve LoginContent en Suspense
 export default function LoginPage() {
   return (
     <Suspense fallback={

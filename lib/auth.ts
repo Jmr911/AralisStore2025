@@ -13,6 +13,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        // Verificamos que vengan el email y la contraseña
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Email y contraseña son requeridos')
         }
@@ -20,7 +21,7 @@ export const authOptions: NextAuthOptions = {
         const client = await clientPromise
         const db = client.db()
 
-        // Buscar usuario
+        // Buscamos al usuario por email en la base de datos
         const user = await db.collection('users').findOne({ 
           email: credentials.email 
         })
@@ -29,7 +30,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Credenciales inválidas')
         }
 
-        // Verificar contraseña
+        // Comparamos la contraseña ingresada con la guardada (encriptada)
         const passwordMatch = await bcrypt.compare(
           credentials.password,
           user.password
@@ -39,6 +40,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Credenciales inválidas')
         }
 
+        // Si todo está bien, retornamos los datos del usuario
         return {
           id: user._id.toString(),
           email: user.email,
@@ -50,27 +52,40 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 10 * 60, // 10 minutos en segundos
-    updateAge: 1 * 60, // ✅ CORRECTO: Actualizar cada 1 minuto
+    maxAge: 10 * 60, // la sesión dura 10 minutos
+    updateAge: 1 * 60, // se actualiza cada 1 minuto
   },
   jwt: {
-    maxAge: 10 * 60, // 10 minutos en segundos
+    maxAge: 10 * 60, // el token dura 10 minutos
   },
   pages: {
-    signIn: '/acceso-usuarios',  // ✅ CAMBIADO de '/login'
-    signOut: '/acceso-usuarios', // ✅ CAMBIADO de '/login'
-    error: '/acceso-usuarios',   // ✅ CAMBIADO de '/login'
+    signIn: '/acceso-usuarios',
+    signOut: '/acceso-usuarios',
+    error: '/acceso-usuarios',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    // Este callback se ejecuta cada vez que se crea o actualiza el token
+    async jwt({ token, user, trigger, session }) {
+      // Si es un login nuevo, guardamos los datos del usuario en el token
       if (user) {
         token.id = user.id
         token.email = user.email
         token.name = user.name
         token.role = user.role || 'user'
       }
+      
+      // Si se actualizó la sesión manualmente (desde updateUser en auth-provider)
+      // esto permite que cuando el usuario edite su perfil, se actualice el nombre en el header
+      if (trigger === 'update' && session) {
+        token.name = session.user.name
+        token.email = session.user.email
+      }
+      
       return token
     },
+    
+    // Este callback se ejecuta cada vez que se accede a la sesión
+    // convierte el token en un objeto de sesión que podemos usar en la app
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string

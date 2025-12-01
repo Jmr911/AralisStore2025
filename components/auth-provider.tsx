@@ -16,6 +16,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
+  updateUser: (updatedUser: User) => void // para actualizar el usuario cuando edite su perfil
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -23,9 +24,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession() // agregamos update para poder actualizar la sesión
 
-  // Sincronizar con NextAuth session
+  // Mantenemos el usuario sincronizado con la sesión de NextAuth
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
       setUser({
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // Usar signIn de NextAuth
+      // Usamos NextAuth para manejar el login
       const result = await signIn("credentials", {
         email,
         password,
@@ -56,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Error al iniciar sesión")
       }
 
-      // La sesión se actualizará automáticamente por el useEffect
       console.log("✅ Sesión iniciada correctamente")
       
     } catch (error: any) {
@@ -91,8 +91,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.refresh()
   }
 
+  // Nueva función para actualizar el usuario cuando edite su perfil
+  // Actualiza tanto el estado local como la sesión de NextAuth
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser)
+    update({ user: updatedUser })
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

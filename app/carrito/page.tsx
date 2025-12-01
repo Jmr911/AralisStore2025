@@ -11,7 +11,6 @@ import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-// Extiende CartItem para incluir variantes de color y talla
 type CartItem = BaseCartItem & {
   color?: string
   talla?: string
@@ -21,6 +20,7 @@ export default function CarritoPage() {
   const { items, removeItem, updateQuantity, total } = useCart()
   const router = useRouter()
 
+  // Mostrar mensaje si el carrito está vacío
   if (items.length === 0) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -40,10 +40,9 @@ export default function CarritoPage() {
     )
   }
 
-  // Envía cotización por WhatsApp con detalles de productos
+  // Enviar cotización por WhatsApp
   const handleSolicitudCotizacion = async () => {
     try {
-      // Guarda la cotización en la base de datos
       await fetch("/api/cotizacion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,11 +52,12 @@ export default function CarritoPage() {
       console.error("Error al guardar la cotización:", error)
     }
 
-    // Construye el mensaje para WhatsApp
+    // Construir mensaje para WhatsApp
     let mensaje = "*Cotización de Productos*\n=========================\n\n"
     items.forEach((item: CartItem) => {
       const subtotal = item.quantity * item.price
       mensaje += `• ${item.name}\n`
+      if (item.sku) mensaje += `  SKU: ${item.sku}\n`
       if (item.color) mensaje += `  Color: ${item.color}\n`
       if (item.talla) mensaje += `  Talla: ${item.talla}\n`
       mensaje += `  Cantidad: ${item.quantity}\n`
@@ -71,7 +71,6 @@ export default function CarritoPage() {
     window.open(`https://wa.me/${numeroWhatsApp}?text=${urlMensaje}`, "_blank")
   }
 
-  // Redirige a la página de checkout
   const handleFinalizarCompra = () => {
     router.push("/checkout")
   }
@@ -80,16 +79,16 @@ export default function CarritoPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
-        <section className="py-12 md:py-16 bg-secondary/30">
+        <section className="py-16 md:py-20 bg-secondary/30">
           <div className="container mx-auto px-4">
             <h1 className="font-serif text-4xl md:text-5xl font-bold text-center">Carrito de compras</h1>
           </div>
         </section>
 
-        <section className="py-12">
+        <section className="py-4">
           <div className="container mx-auto px-4 max-w-5xl">
             <div className="grid lg:grid-cols-3 gap-8">
-              {/* Lista de productos en el carrito */}
+              {/* Lista de productos */}
               <div className="lg:col-span-2 space-y-4">
                 {items.map((item: CartItem) => (
                   <Card key={item.id}>
@@ -102,6 +101,7 @@ export default function CarritoPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold mb-1">{item.name}</h3>
                           <p className="text-sm text-muted-foreground mb-2">{item.category}</p>
+                          {item.sku && <p className="text-sm text-muted-foreground mb-1">SKU: {item.sku}</p>}
                           {item.color && <p className="text-sm text-muted-foreground mb-1">Color: {item.color}</p>}
                           {item.talla && <p className="text-sm text-muted-foreground mb-1">Talla: {item.talla}</p>}
                           <p className="font-bold">₡{item.price.toLocaleString()}</p>
@@ -112,6 +112,7 @@ export default function CarritoPage() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
 
+                          {/* Controles de cantidad */}
                           <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
@@ -138,7 +139,7 @@ export default function CarritoPage() {
                 ))}
               </div>
 
-              {/* Resumen del carrito y opciones de compra */}
+              {/* Resumen del carrito */}
               <div>
                 <Card className="sticky top-24">
                   <CardContent className="p-6 space-y-4">
@@ -174,7 +175,7 @@ export default function CarritoPage() {
                       size="lg" 
                       onClick={handleSolicitudCotizacion}
                     >
-                      Solicitar cotización
+                      Cotización al por mayor
                     </Button>
 
                     <p className="text-xs text-center text-muted-foreground leading-relaxed">

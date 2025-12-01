@@ -5,7 +5,7 @@ import { enviarEmailPedido } from '@/lib/email'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-// Obtiene la lista de pedidos del usuario autenticado
+// Obtener pedidos del usuario
 export async function GET(request: NextRequest) {
   console.log('GET /api/pedidos - Obteniendo pedidos')
   
@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const email = searchParams.get('email')
     
+    // Validar que se proporcione el email
     if (!email) {
       console.log('No se proporcionó email en la URL')
       return NextResponse.json(
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise
     const db = client.db()
 
-    // Filtra pedidos por email del usuario
+    // Buscar pedidos por email y ordenar por fecha
     const pedidos = await db
       .collection('pedidos')
       .find({ email: email })
@@ -49,22 +50,18 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Genera un número de pedido único con formato ARALIS-AÑONUMERO
+// Generar número de pedido único con formato ARALIS-AÑOXXXX
 async function generarNumeroPedidoUnico(db: any): Promise<string> {
   const añoActual = new Date().getFullYear()
   const maxIntentos = 50
   
   for (let intento = 0; intento < maxIntentos; intento++) {
-    // Genera número aleatorio entre 1 y 9999
+    // Generar número aleatorio de 4 dígitos
     const numeroAleatorio = Math.floor(Math.random() * 9999) + 1
-    
-    // Formatea con 4 dígitos (0001, 0002, ..., 9999)
     const numeroFormateado = String(numeroAleatorio).padStart(4, '0')
-    
-    // Crea el número de pedido: ARALIS-20250001
     const numeroPedido = `ARALIS-${añoActual}${numeroFormateado}`
     
-    // Verifica si ya existe en la base de datos
+    // Verificar que no exista en la base de datos
     const pedidoExistente = await db.collection('pedidos').findOne({ 
       numeroPedido: numeroPedido 
     })
@@ -80,7 +77,7 @@ async function generarNumeroPedidoUnico(db: any): Promise<string> {
   throw new Error('No se pudo generar un número de pedido único después de múltiples intentos')
 }
 
-// Crea un nuevo pedido
+// Crear nuevo pedido
 export async function POST(request: NextRequest) {
   console.log('POST /api/pedidos - Creando pedido')
   
@@ -90,7 +87,7 @@ export async function POST(request: NextRequest) {
     
     const body = await request.json()
 
-    // Valida que haya productos en el carrito
+    // Validar que haya productos en el carrito
     if (!body.items || body.items.length === 0) {
       console.log('No hay productos en el carrito')
       return NextResponse.json(
@@ -99,7 +96,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Valida que se proporcione el email del usuario
+    // Validar email del usuario
     if (!body.userEmail) {
       console.log('No se proporcionó email de usuario')
       return NextResponse.json(
@@ -110,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Email del usuario:', body.userEmail)
 
-    // Calcula los subtotales e incluye SKU de cada producto
+    // Procesar items del carrito con sus detalles
     const itemsConSubtotal = body.items.map((item: any) => {
       return {
         productoId: item.id,
@@ -126,19 +123,20 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Genera número de pedido único
     console.log('Generando número de pedido aleatorio...')
     const numeroPedido = await generarNumeroPedidoUnico(db)
 
     console.log('Número de pedido final:', numeroPedido)
 
-    // Crea el objeto del pedido
+    // Preparar objeto del pedido con todos los datos
     const pedido = {
       numeroPedido: numeroPedido,
       nombreCliente: body.userName || '',
       email: body.userEmail,
       telefono: body.telefonoContacto || '',
       direccion: body.direccionEnvio || '',
+      tipoEntrega: body.tipoEntrega || 'retiro',
+      datosEnvio: body.datosEnvio || null,
       productos: itemsConSubtotal,
       total: body.total,
       estado: 'pendiente',
@@ -150,12 +148,12 @@ export async function POST(request: NextRequest) {
     console.log('Guardando pedido en BD...')
     console.log('Pedido completo:', JSON.stringify(pedido, null, 2))
     
-    // Guarda el pedido en MongoDB
+    // Guardar en MongoDB
     const resultado = await db.collection('pedidos').insertOne(pedido)
 
     console.log('Pedido guardado con ID:', resultado.insertedId)
 
-    // Envía email de confirmación al cliente
+    // Intentar enviar email de confirmación
     console.log('Enviando email de confirmación a:', pedido.email)
     try {
       const emailResult = await enviarEmailPedido({
