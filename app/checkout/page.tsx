@@ -32,6 +32,12 @@ export default function CheckoutPage() {
   const [cargando, setCargando] = useState(false)
   const [pedidoCompletado, setPedidoCompletado] = useState(false)
   const [numeroPedido, setNumeroPedido] = useState("")
+  const [mounted, setMounted] = useState(false)
+
+  // Espera a que el componente esté montado en el cliente
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Autocompleta el formulario con los datos del usuario si está logueado
   useEffect(() => {
@@ -44,11 +50,12 @@ export default function CheckoutPage() {
     }
   }, [user])
 
-  // Redirige al carrito si está vacío
-  if (items.length === 0 && !pedidoCompletado) {
-    router.push("/carrito")
-    return null
-  }
+  // Redirige al carrito si está vacío (solo después de montar)
+  useEffect(() => {
+    if (mounted && items.length === 0 && !pedidoCompletado) {
+      router.push("/carrito")
+    }
+  }, [mounted, items.length, pedidoCompletado, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -85,7 +92,9 @@ export default function CheckoutPage() {
         setPedidoCompletado(true)
         clearCart()
         enviarWhatsApp(resultado.pedido)
-        window.scrollTo(0, 0)
+        if (typeof window !== 'undefined') {
+          window.scrollTo(0, 0)
+        }
       } else {
         alert("Hubo un error al procesar tu pedido. Intenta de nuevo.")
       }
@@ -99,6 +108,8 @@ export default function CheckoutPage() {
 
   // Crea el mensaje de WhatsApp con los detalles del pedido
   const enviarWhatsApp = (pedido: any) => {
+    if (typeof window === 'undefined') return
+
     let mensaje = `*Nuevo Pedido #${pedido.numeroPedido}*\n\n`
     mensaje += `*Cliente:* ${formData.nombre}\n`
     mensaje += `*Email:* ${formData.email}\n`
@@ -129,6 +140,11 @@ export default function CheckoutPage() {
     const urlMensaje = encodeURIComponent(mensaje)
     const numeroWhatsApp = "83195781"
     window.open(`https://wa.me/${numeroWhatsApp}?text=${urlMensaje}`, "_blank")
+  }
+
+  // Muestra un loader mientras se monta el componente
+  if (!mounted) {
+    return null
   }
 
   // Pantalla de confirmación de pedido exitoso

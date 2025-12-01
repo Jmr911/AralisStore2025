@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -26,7 +26,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { CheckCircle, Image as ImageIcon } from "lucide-react"
 import { DecorativeDivider } from "@/components/Division-decorativa"
 
-export default function PersonalizarPage() {
+// Componente interno que usa useSearchParams
+function PersonalizarContent() {
   const searchParams = useSearchParams()
   const productoNombre = searchParams.get("producto")
 
@@ -99,7 +100,9 @@ ${formData.email ? `- Email: ${formData.email}` : ""}
     const whatsappNumber = "50683195781"
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
 
-    window.open(whatsappUrl, "_blank")
+    if (typeof window !== 'undefined') {
+      window.open(whatsappUrl, "_blank")
+    }
 
     // Muestra confirmación y limpia el formulario
     setSubmitted(true)
@@ -373,5 +376,21 @@ ${formData.email ? `- Email: ${formData.email}` : ""}
       </main>
       <Footer />
     </div>
+  )
+}
+
+// Componente principal que envuelve PersonalizarContent en Suspense
+export default function PersonalizarPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando formulario...</p>
+        </div>
+      </div>
+    }>
+      <PersonalizarContent />
+    </Suspense>
   )
 }
