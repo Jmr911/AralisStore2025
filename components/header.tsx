@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 import { ShoppingCart, Menu, User, X, Package, KeyRound, LogOut, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
@@ -14,10 +15,14 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const pathname = usePathname() // Hook para detectar la ruta actual
 
   // Mostramos diferentes enlaces según si es admin o usuario normal
   const pedidosUrl = user?.role === 'admin' ? '/admin/pedidos' : '/mis-pedidos'
   const pedidosTexto = user?.role === 'admin' ? 'Gestión de Pedidos' : 'Mis Pedidos'
+
+  // Función para determinar si un link está activo
+  const isActive = (path: string) => pathname === path
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,13 +67,34 @@ export function Header() {
 
           {/* Menú de navegación en desktop */}
           <nav className="hidden md:flex items-center gap-8 justify-center">
-            <Link href="/catalogo" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">
+            <Link 
+              href="/catalogo" 
+              className={`text-sm font-medium transition-colors whitespace-nowrap px-3 py-2 rounded-md ${
+                isActive('/catalogo') 
+                  ? 'bg-primary/10 text-primary font-semibold' 
+                  : 'hover:text-primary hover:bg-primary/5'
+              }`}
+            >
               Catálogo
             </Link>
-            <Link href="/personalizar" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">
+            <Link 
+              href="/personalizar" 
+              className={`text-sm font-medium transition-colors whitespace-nowrap px-3 py-2 rounded-md ${
+                isActive('/personalizar') 
+                  ? 'bg-primary/10 text-primary font-semibold' 
+                  : 'hover:text-primary hover:bg-primary/5'
+              }`}
+            >
               Personalizar
             </Link>
-            <Link href="/contacto" className="text-sm font-medium hover:text-primary transition-colors whitespace-nowrap">
+            <Link 
+              href="/contacto" 
+              className={`text-sm font-medium transition-colors whitespace-nowrap px-3 py-2 rounded-md ${
+                isActive('/contacto') 
+                  ? 'bg-primary/10 text-primary font-semibold' 
+                  : 'hover:text-primary hover:bg-primary/5'
+              }`}
+            >
               Contacto
             </Link>
           </nav>
@@ -153,13 +179,34 @@ export function Header() {
         {/* Menú móvil */}
         {mobileMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 flex flex-col gap-4 border-t pt-4">
-            <Link href="/catalogo" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link 
+              href="/catalogo" 
+              className={`text-sm font-medium transition-colors px-3 py-2 rounded-md ${
+                isActive('/catalogo') 
+                  ? 'bg-primary/10 text-primary font-semibold' 
+                  : 'hover:text-primary'
+              }`}
+            >
               Catálogo
             </Link>
-            <Link href="/personalizar" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link 
+              href="/personalizar" 
+              className={`text-sm font-medium transition-colors px-3 py-2 rounded-md ${
+                isActive('/personalizar') 
+                  ? 'bg-primary/10 text-primary font-semibold' 
+                  : 'hover:text-primary'
+              }`}
+            >
               Personalizar
             </Link>
-            <Link href="/contacto" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link 
+              href="/contacto" 
+              className={`text-sm font-medium transition-colors px-3 py-2 rounded-md ${
+                isActive('/contacto') 
+                  ? 'bg-primary/10 text-primary font-semibold' 
+                  : 'hover:text-primary'
+              }`}
+            >
               Contacto
             </Link>
             {user ? (

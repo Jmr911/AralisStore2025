@@ -63,10 +63,10 @@ export function Footer() {
               <li className="flex items-center gap-2 opacity-90">
                 <Mail className="h-3 w-3 flex-shrink-0" />
                 <a 
-                  href="mailto:info@aralis.cr"
+                  href="mailto:AralisModa@hotmail.com"
                   className="hover:opacity-100 hover:underline transition-opacity"
                 >
-                  info@aralis.cr
+                  AralisModa@hotmail.com
                 </a>
               </li>
             </ul>
