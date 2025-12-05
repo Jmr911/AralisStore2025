@@ -132,14 +132,14 @@ export default function ContactoPage() {
                   </div>
 
                   <div className="flex gap-4">
-                    <a href="mailto:info@aralis.cr" className="flex-shrink-0 hover:opacity-80 transition-opacity">
+                    <a href="mailto:AralisModa@hotmail.com" className="flex-shrink-0 hover:opacity-80 transition-opacity">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                         <Mail className="h-5 w-5 text-primary" />
                       </div>
                     </a>
                     <div>
                       <h3 className="font-semibold mb-1">Correo electrónico</h3>
-                      <p className="text-muted-foreground text-sm">info@aralis.cr</p>
+                      <p className="text-muted-foreground text-sm">AralisModa@hotmail.com</p>
                     </div>
                   </div>
                 </div>
