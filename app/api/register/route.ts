@@ -42,12 +42,13 @@ export async function POST(req: Request) {
     // Guardar en MongoDB
     const result = await usersCollection.insertOne(newUser)
 
-    // Enviar email de bienvenida (no bloquea el registro si falla)
+    // Intentar enviar email de bienvenida
     try {
       await enviarEmailBienvenida(email, name)
-      console.log('✅ Email de bienvenida enviado a:', email)
+      console.log('Email de bienvenida enviado a:', email)
     } catch (emailError) {
-      console.error('⚠️ Error al enviar email de bienvenida:', emailError)
+      console.error('Error al enviar email de bienvenida:', emailError)
+      // Si falla el email, el usuario igual queda registrado
     }
 
     return NextResponse.json({
