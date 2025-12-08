@@ -5,11 +5,16 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { enviarEmailCambioEstado } from '@/lib/email';
 
+// Actualiza el estado de un pedido específico
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Obtiene el ID del pedido desde la URL
+    const { id } = await params;
+    
+    // Revisa si hay un usuario logueado
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user) {
@@ -19,7 +24,7 @@ export async function PATCH(
       );
     }
 
-    // Solo administradores pueden cambiar estados
+    // Solo admins pueden cambiar estados
     if (session.user.role !== 'admin') {
       return NextResponse.json(
         { error: 'No tienes permisos de administrador' },
@@ -27,8 +32,10 @@ export async function PATCH(
       );
     }
 
+    // Obtiene el nuevo estado del body
     const { estado } = await request.json();
 
+    // Verifica que el estado sea válido
     const estadosPermitidos = ['pendiente', 'pagado', 'en preparación', 'enviado', 'entregado', 'cancelado'];
     
     if (!estadosPermitidos.includes(estado)) {
@@ -41,8 +48,8 @@ export async function PATCH(
     const client = await clientPromise;
     const db = client.db();
 
-    // Busca el pedido antes de actualizar para poder enviar el email
-    const pedido = await db.collection('pedidos').findOne({ _id: new ObjectId(params.id) });
+    // Busca el pedido antes de actualizarlo (lo necesitamos para el email)
+    const pedido = await db.collection('pedidos').findOne({ _id: new ObjectId(id) });
 
     if (!pedido) {
       return NextResponse.json(
@@ -51,8 +58,9 @@ export async function PATCH(
       );
     }
 
+    // Actualiza el estado en la base de datos
     const result = await db.collection('pedidos').updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { 
         $set: { 
           estado: estado,
@@ -68,13 +76,12 @@ export async function PATCH(
       );
     }
 
-    // Notifica al cliente por email del cambio de estado
+    // Envía email al cliente informando el cambio
     try {
       await enviarEmailCambioEstado(pedido, estado);
       console.log('Email de cambio de estado enviado correctamente');
     } catch (emailError) {
       console.error('Error al enviar email (el estado se actualizó correctamente):', emailError);
-      // El pedido se actualiza aunque falle el email
     }
 
     return NextResponse.json({

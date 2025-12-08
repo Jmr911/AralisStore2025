@@ -3,8 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import clientPromise from '@/lib/mongodb';
 
+// Obtiene la lista de todos los pedidos
 export async function GET() {
   try {
+    // Revisa si hay un usuario logueado
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user) {
@@ -14,7 +16,7 @@ export async function GET() {
       );
     }
 
-    // Solo administradores pueden ver todos los pedidos
+    // Solo admins pueden ver todos los pedidos
     if (session.user.role !== 'admin') {
       return NextResponse.json(
         { error: 'No tienes permisos de administrador' },
@@ -25,19 +27,23 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db();
 
-    // Obtiene todos los pedidos ordenados por fecha
+    // Trae todos los pedidos, ordenados del más reciente al más viejo
     const pedidosRaw = await db
       .collection('pedidos')
       .find({})
       .sort({ fechaPedido: -1 })
       .toArray();
 
-    // Normaliza la estructura para compatibilidad con diferentes versiones del schema
+    // Algunos pedidos viejos guardaron los datos con nombres diferentes
+    // Este código normaliza todo para que funcione igual
     const pedidos = pedidosRaw.map(pedido => ({
       ...pedido,
+      // Unifica el nombre del cliente
       userName: pedido.userName || pedido.nombreCliente || 'Cliente',
+      // Unifica el email del cliente
       userEmail: pedido.userEmail || pedido.email || '',
       
+      // Normaliza la lista de productos
       items: pedido.items || (pedido.productos ? pedido.productos.map((p: any) => ({
         productoId: p.productoId,
         name: p.nombre,
@@ -50,6 +56,7 @@ export async function GET() {
         subtotal: p.subtotal
       })) : []),
       
+      // Unifica otros campos
       direccionEnvio: pedido.direccionEnvio || pedido.direccion || '',
       telefonoContacto: pedido.telefonoContacto || pedido.telefono || '',
       notasAdicionales: pedido.notasAdicionales || pedido.notasCliente || ''

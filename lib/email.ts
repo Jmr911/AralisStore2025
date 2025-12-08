@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Config de los emails
 const EMAIL_CONFIG = {
-  from: 'Aralis <onboarding@resend.dev>', 
+  from: 'Aralis <noreply@aralisstore.com>',
   brandColor: '#5D4037',
   accentColor: '#C9A96E',
   lightBg: '#F8F6F0',

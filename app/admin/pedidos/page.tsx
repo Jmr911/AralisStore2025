@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { Package, Calendar, User, Phone, MapPin, ChevronDown, ChevronUp, Save, Search } from "lucide-react"
+import { Package, Calendar, User, Phone, MapPin, ChevronDown, ChevronUp, Save, Search, Mail } from "lucide-react"
 import Image from "next/image"
 import { useToast } from "@/hooks/use-toast"
 
@@ -24,11 +24,11 @@ export default function AdminPedidosPage() {
   const [filtroCliente, setFiltroCliente] = useState<string>("")
   const [pedidoExpandido, setPedidoExpandido] = useState<string | null>(null)
   
-  // Guarda cambios de estado antes de enviarlos al servidor
+  // Guarda cambios de estado temporalmente antes de enviarlos
   const [cambiosPendientes, setCambiosPendientes] = useState<Record<string, string>>({})
   const [guardando, setGuardando] = useState<Record<string, boolean>>({})
 
-  // Verifica que solo administradores accedan
+  // Solo admins pueden acceder a esta página
   useEffect(() => {
     if (!cargando && (!user || user.role !== 'admin')) {
       console.log("Usuario no es admin, redirigiendo...")
@@ -42,6 +42,7 @@ export default function AdminPedidosPage() {
     }
   }, [user])
 
+  // Trae todos los pedidos desde la API
   const obtenerTodosLosPedidos = async () => {
     try {
       const response = await fetch('/api/admin/pedidos')
@@ -73,7 +74,7 @@ export default function AdminPedidosPage() {
     }
   }
 
-  // Registra el cambio temporalmente sin guardarlo aún
+  // Guarda temporalmente el cambio sin enviarlo al servidor
   const registrarCambioEstado = (pedidoId: string, nuevoEstado: string) => {
     setCambiosPendientes(prev => ({
       ...prev,
@@ -81,6 +82,7 @@ export default function AdminPedidosPage() {
     }))
   }
 
+  // Envía el cambio de estado al servidor y notifica al cliente
   const guardarCambioEstado = async (pedidoId: string) => {
     const nuevoEstado = cambiosPendientes[pedidoId]
     
@@ -137,6 +139,7 @@ export default function AdminPedidosPage() {
     }
   }
 
+  // Cancela el cambio temporal sin guardarlo
   const cancelarCambio = (pedidoId: string) => {
     setCambiosPendientes(prev => {
       const { [pedidoId]: _, ...rest } = prev
@@ -144,7 +147,7 @@ export default function AdminPedidosPage() {
     })
   }
 
-  // Aplica filtros de estado y búsqueda de cliente
+  // Filtra pedidos por estado y búsqueda
   const pedidosFiltrados = pedidos.filter(p => {
     const pasaFiltroEstado = filtroEstado === "todos" || p.estado === filtroEstado
     
@@ -161,6 +164,7 @@ export default function AdminPedidosPage() {
     return pasaFiltroEstado && pasaFiltroCliente
   })
 
+  // Asigna color al badge según el estado
   const obtenerColorEstado = (estado: string) => {
     const colores: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       "pendiente": "secondary",
@@ -173,6 +177,7 @@ export default function AdminPedidosPage() {
     return colores[estado] || "default"
   }
 
+  // Formatea la fecha en español
   const formatearFecha = (fecha: string) => {
     const date = new Date(fecha)
     return date.toLocaleDateString("es-CR", {
@@ -184,10 +189,12 @@ export default function AdminPedidosPage() {
     })
   }
 
+  // Expande o contrae los detalles del pedido
   const toggleExpandir = (pedidoId: string) => {
     setPedidoExpandido(pedidoExpandido === pedidoId ? null : pedidoId)
   }
 
+  // Limpia todos los filtros aplicados
   const limpiarFiltros = () => {
     setFiltroEstado("todos")
     setFiltroCliente("")
@@ -259,7 +266,7 @@ export default function AdminPedidosPage() {
                   </Select>
                 </div>
 
-                {/* Búsqueda de cliente */}
+                {/* Búsqueda por cliente, email o número de pedido */}
                 <div className="flex gap-2 items-center flex-1 w-full md:w-auto">
                   <span className="text-sm font-semibold whitespace-nowrap">Buscar:</span>
                   <div className="relative flex-1 md:w-[300px]">
@@ -358,14 +365,19 @@ export default function AdminPedidosPage() {
                               </Button>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                            {/* Información básica del pedido */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                               <div className="flex items-center gap-2 text-muted-foreground">
                                 <User className="h-4 w-4" />
-                                <span>Cliente: {pedido.userName || pedido.userEmail}</span>
+                                <span>Cliente: {pedido.userName}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Mail className="h-4 w-4" />
+                                <span>Correo: {pedido.userEmail}</span>
                               </div>
                               <div className="flex items-center gap-2 text-muted-foreground">
                                 <Calendar className="h-4 w-4" />
-                                <span>{formatearFecha(pedido.fechaPedido)}</span>
+                                <span>Fecha Pedido: {formatearFecha(pedido.fechaPedido)}</span>
                               </div>
                             </div>
                           </div>
@@ -378,7 +390,7 @@ export default function AdminPedidosPage() {
 
                       {pedidoExpandido === pedido._id && (
                         <CardContent className="space-y-4 pt-6">
-                          {/* Selector de estado con confirmación */}
+                          {/* Selector de estado */}
                           <div className="flex items-center gap-3 pb-4 border-b flex-wrap">
                             <span className="font-semibold">Cambiar estado:</span>
                             <Select
