@@ -75,9 +75,9 @@ export default function ContactoPage() {
         {/* Sección sobre nosotros */}
         <section className="pt-20 pb-12 md:pt-24 md:pb-16 bg-secondary/20">
           <div className="container mx-auto px-4 max-w-4xl text-center">
-            <h1 className="font-serif text-4xl md:text-5xl font-bold mb-6">Sobre nosotros</h1>
+            <h1 className="font-serif text-4xl md:text-5xl font-bold mb-6">Sobre Nosotros</h1>
             <p className="text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed text-base md:text-lg">
-              Aralis es una microempresa dedicada a la confección personalizada de prendas de vestir en Tacacori, Alajuela. Combinamos tradición artesanal con técnicas modernas para crear piezas únicas que reflejan tu estilo.
+              Aralis es una microempresa ubicada en Tacacorí, Alajuela, dedicada desde 2020 a la confección personalizada de prendas de vestir. Combinamos la tradición artesanal con técnicas modernas para crear piezas únicas que reflejan el estilo de cada cliente.
             </p>
             <div className="relative w-full max-w-2xl aspect-video mx-auto rounded-lg overflow-hidden shadow-lg">
               <img src="/casa-artesanal-taller-confeccion.jpg" alt="Nuestra ubicación" className="w-full h-full object-cover" />
@@ -92,7 +92,7 @@ export default function ContactoPage() {
           <div className="container mx-auto px-4">
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4">Contáctanos</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Estamos aquí para responder tus preguntas y ayudarte con tu proyecto
+              Estamos aquí para responder tus preguntas y diseñar lo que sueñas.
             </p>
           </div>
         </section>
@@ -176,7 +176,7 @@ export default function ContactoPage() {
                       <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                           <h2 className="font-serif text-2xl font-bold mb-2">Envíanos un mensaje</h2>
-                          <p className="text-sm text-muted-foreground">Completa el formulario y te contactaremos por WhatsApp</p>
+                          <p className="text-sm text-muted-foreground">Completa el formulario y te contactaremos pronto.</p>
                         </div>
 
                         <div className="space-y-2">

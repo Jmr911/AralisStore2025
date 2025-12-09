@@ -11,7 +11,24 @@ const EMAIL_CONFIG = {
   lightBg: '#F8F6F0',
   brandName: 'Aralis',
   supportEmail: 'jmr91_@hotmail.com',
-  whatsapp: '+506 8319-5781'
+  whatsapp: '+506 8319-5781',
+  adminEmail: 'AralisModa@hotmail.com' // Email para notificaciones admin
+}
+
+// Función helper para notificar al admin sobre eventos importantes
+async function notificarAdmin(asunto: string, contenidoHTML: string, contenidoTexto: string) {
+  try {
+    await resend.emails.send({
+      from: EMAIL_CONFIG.from,
+      to: EMAIL_CONFIG.adminEmail,
+      subject: `[ADMIN] ${asunto}`,
+      html: contenidoHTML,
+      text: contenidoTexto
+    })
+    console.log('Notificación enviada al admin')
+  } catch (error) {
+    console.error('Error al notificar al admin:', error)
+  }
 }
 
 // Envía email de recuperación de contraseña
@@ -34,6 +51,14 @@ export async function enviarEmailRecuperacion(email: string, token: string) {
     }
 
     console.log('Email de recuperación enviado a:', email)
+
+    // Notificar al admin
+    await notificarAdmin(
+      'Solicitud de recuperación de contraseña',
+      `<p><strong>Usuario:</strong> ${email}<br><strong>Fecha:</strong> ${new Date().toLocaleString('es-CR')}</p>`,
+      `Usuario: ${email}\nFecha: ${new Date().toLocaleString('es-CR')}`
+    )
+
     return { success: true, data }
 
   } catch (error) {
@@ -62,6 +87,14 @@ export async function enviarEmailConfirmacionCambio(email: string, nombre?: stri
     }
 
     console.log('Confirmación de cambio enviada a:', email)
+
+    // Notificar al admin
+    await notificarAdmin(
+      'Contraseña actualizada',
+      `<p><strong>Usuario:</strong> ${nombre || 'Sin nombre'}<br><strong>Email:</strong> ${email}<br><strong>Fecha:</strong> ${new Date().toLocaleString('es-CR')}</p>`,
+      `Usuario: ${nombre || 'Sin nombre'}\nEmail: ${email}\nFecha: ${new Date().toLocaleString('es-CR')}`
+    )
+
     return { success: true, data }
 
   } catch (error) {
@@ -99,6 +132,23 @@ export async function enviarEmailCambioPerfil(
     }
 
     console.log('Confirmación de cambio de perfil enviada a:', emailDestino)
+
+    // Armar lista de cambios para el admin
+    const cambiosTexto = []
+    if (cambios.nombreAnterior && cambios.nombreNuevo) {
+      cambiosTexto.push(`Nombre: ${cambios.nombreAnterior} → ${cambios.nombreNuevo}`)
+    }
+    if (cambios.emailAnterior && cambios.emailNuevo) {
+      cambiosTexto.push(`Email: ${cambios.emailAnterior} → ${cambios.emailNuevo}`)
+    }
+
+    // Notificar al admin
+    await notificarAdmin(
+      'Perfil actualizado',
+      `<p><strong>Usuario:</strong> ${nombre}<br><strong>Email:</strong> ${emailDestino}<br><strong>Cambios:</strong><br>${cambiosTexto.map(c => `- ${c}`).join('<br>')}<br><strong>Fecha:</strong> ${new Date().toLocaleString('es-CR')}</p>`,
+      `Usuario: ${nombre}\nEmail: ${emailDestino}\nCambios:\n${cambiosTexto.join('\n')}\nFecha: ${new Date().toLocaleString('es-CR')}`
+    )
+
     return { success: true, data }
 
   } catch (error) {
@@ -127,6 +177,14 @@ export async function enviarEmailBienvenida(email: string, nombre: string) {
     }
 
     console.log('Email de bienvenida enviado a:', email)
+
+    // Notificar al admin del nuevo registro
+    await notificarAdmin(
+      'Nuevo usuario registrado',
+      `<p><strong>Nombre:</strong> ${nombre}<br><strong>Email:</strong> ${email}<br><strong>Fecha:</strong> ${new Date().toLocaleString('es-CR')}</p>`,
+      `Nombre: ${nombre}\nEmail: ${email}\nFecha: ${new Date().toLocaleString('es-CR')}`
+    )
+
     return { success: true, data }
 
   } catch (error) {
@@ -167,6 +225,31 @@ export async function enviarEmailPedido(pedido: any) {
 
     console.log('Email de pedido enviado a:', pedido.email)
     console.log('Pedido número:', pedido.numeroPedido)
+
+    // Info de productos para el admin
+    const productosTexto = pedido.productos.map((prod: any) => 
+      `${prod.nombre}${prod.sku ? ` [${prod.sku}]` : ''} - Cant: ${prod.cantidad}${prod.color ? ` (${prod.color})` : ''}${prod.talla ? ` Talla: ${prod.talla}` : ''}`
+    ).join('\n')
+
+    // Notificar al admin del nuevo pedido
+    await notificarAdmin(
+      `Nuevo Pedido #${pedido.numeroPedido}`,
+      `
+        <h3>Nuevo Pedido Recibido</h3>
+        <p><strong>Pedido:</strong> ${pedido.numeroPedido}<br>
+        <strong>Cliente:</strong> ${pedido.nombreCliente}<br>
+        <strong>Email:</strong> ${pedido.email}<br>
+        <strong>Teléfono:</strong> ${pedido.telefono || 'No proporcionado'}<br>
+        <strong>Total:</strong> ₡${pedido.total.toLocaleString('es-CR')}<br>
+        <strong>Dirección:</strong> ${pedido.direccion}<br>
+        ${pedido.notasCliente ? `<strong>Notas:</strong> ${pedido.notasCliente}<br>` : ''}
+        <strong>Fecha:</strong> ${new Date(pedido.fechaPedido).toLocaleString('es-CR')}</p>
+        <h4>Productos:</h4>
+        ${productosHTML}
+      `,
+      `PEDIDO #${pedido.numeroPedido}\n\nCliente: ${pedido.nombreCliente}\nEmail: ${pedido.email}\nTeléfono: ${pedido.telefono || 'No proporcionado'}\nTotal: ₡${pedido.total.toLocaleString('es-CR')}\n\nProductos:\n${productosTexto}\n\nDirección: ${pedido.direccion}\n${pedido.notasCliente ? `Notas: ${pedido.notasCliente}\n` : ''}Fecha: ${new Date(pedido.fechaPedido).toLocaleString('es-CR')}`
+    )
+
     return { success: true, data }
 
   } catch (error) {
@@ -197,6 +280,21 @@ export async function enviarEmailCambioEstado(pedido: any, nuevoEstado: string) 
     console.log('Email de cambio de estado enviado a:', pedido.userEmail || pedido.email)
     console.log('Pedido número:', pedido.numeroPedido)
     console.log('Nuevo estado:', nuevoEstado)
+
+    // Notificar al admin del cambio de estado
+    await notificarAdmin(
+      `Cambio de Estado - Pedido #${pedido.numeroPedido}`,
+      `
+        <p><strong>Pedido:</strong> ${pedido.numeroPedido}<br>
+        <strong>Cliente:</strong> ${pedido.userName || pedido.nombreCliente || 'Cliente'}<br>
+        <strong>Email:</strong> ${pedido.userEmail || pedido.email}<br>
+        <strong>Nuevo Estado:</strong> ${nuevoEstado.toUpperCase()}<br>
+        <strong>Total:</strong> ₡${pedido.total.toLocaleString('es-CR')}<br>
+        <strong>Fecha:</strong> ${new Date().toLocaleString('es-CR')}</p>
+      `,
+      `PEDIDO #${pedido.numeroPedido}\n\nCliente: ${pedido.userName || pedido.nombreCliente || 'Cliente'}\nEmail: ${pedido.userEmail || pedido.email}\nNuevo Estado: ${nuevoEstado.toUpperCase()}\nTotal: ₡${pedido.total.toLocaleString('es-CR')}\nFecha: ${new Date().toLocaleString('es-CR')}`
+    )
+
     return { success: true, data }
 
   } catch (error) {

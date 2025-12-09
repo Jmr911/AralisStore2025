@@ -144,7 +144,6 @@ export default function CatalogoPage() {
                   <div key={product.id} className="border p-4 rounded-md relative">
                     <ProductCard product={product} />
                     <p className="text-xs text-muted-foreground mt-3">
-                      SKU: {product.sku}
                     </p>
                   </div>
                 ))}
