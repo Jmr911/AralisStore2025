@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card"
 
 export default function RecuperarContrasenaPage() {
+  // Estados para controlar el formulario
   const [email, setEmail] = useState("")
   const [enviado, setEnviado] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -29,6 +30,7 @@ export default function RecuperarContrasenaPage() {
     setError("")
 
     try {
+      // Enviamos el email al backend para iniciar la recuperación
       const response = await fetch("/api/password/recuperar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -63,6 +65,7 @@ export default function RecuperarContrasenaPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Si el correo ya se envió, mostramos mensaje de confirmación */}
             {enviado ? (
               <div className="text-center space-y-4">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -79,6 +82,7 @@ export default function RecuperarContrasenaPage() {
                 </Button>
               </div>
             ) : (
+              // Formulario para ingresar el email
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Correo electrónico</Label>
@@ -93,6 +97,7 @@ export default function RecuperarContrasenaPage() {
                   />
                 </div>
 
+                {/* Mostramos errores si los hay */}
                 {error && (
                   <p className="text-sm text-red-600 text-center">{error}</p>
                 )}
@@ -108,6 +113,7 @@ export default function RecuperarContrasenaPage() {
                   )}
                 </Button>
 
+                {/* Link para regresar al login */}
                 <div className="text-center">
                   <button
                     type="button"

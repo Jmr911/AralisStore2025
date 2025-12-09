@@ -6,7 +6,7 @@ export function Hero() {
     <section className="relative pt-16 md:pt-24 pb-8 md:pb-12 overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Título principal - Mismo tamaño que "Nuestras Creaciones" */}
+          {/* Título principal */}
           <h1 className="font-serif text-4xl md:text-5xl font-bold text-balance text-foreground mb-4">
             Creatividad a tu medida
           </h1>
@@ -16,7 +16,7 @@ export function Hero() {
             Prendas personalizadas que expresan tu estilo con innovación y distinción.
           </p>
           
-          {/* Botones de llamada a la acción */}
+          {/* Botones de acción */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild className="text-base">
               <Link href="/catalogo">Explorar catálogo</Link>
@@ -28,7 +28,7 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Elemento decorativo de fondo */}
+      {/* Elemento decorativo de fondo con degradado */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl" />
       </div>

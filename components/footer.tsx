@@ -9,6 +9,7 @@ export function Footer() {
     <footer className="bg-primary text-primary-foreground py-3 md:py-4">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-4 mb-2">
+          {/* Información de la marca */}
           <div>
             <h3 className="font-serif text-sm font-bold mb-1">Aralis</h3>
             <p className="text-xs opacity-90 leading-snug">
@@ -16,6 +17,7 @@ export function Footer() {
             </p>
           </div>
 
+          {/* Links de navegación */}
           <div>
             <h4 className="font-semibold mb-1 text-sm">Navegación</h4>
             <ul className="space-y-1 text-xs">
@@ -37,6 +39,7 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Información de contacto */}
           <div>
             <h4 className="font-semibold mb-1 text-sm">Contacto</h4>
             <ul className="space-y-1 text-xs">
@@ -72,6 +75,7 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Redes sociales */}
           <div>
             <h4 className="font-semibold mb-1 text-sm">Síguenos</h4>
             <div className="flex gap-3">
@@ -93,7 +97,7 @@ export function Footer() {
               >
                 <Instagram className="h-4 w-4" />
               </a>
-              <a
+              <a 
                 href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -108,6 +112,7 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Copyright */}
         <div className="border-t border-primary-foreground/20 pt-2 text-center text-xs opacity-90">
           <p>&copy; {new Date().getFullYear()} Aralis. Todos los derechos reservados.</p>
         </div>

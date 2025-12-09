@@ -16,7 +16,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
-  updateUser: (updatedUser: User) => void // para actualizar el usuario cuando edite su perfil
+  updateUser: (updatedUser: User) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,9 +24,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
-  const { data: session, status, update } = useSession() // agregamos update para poder actualizar la sesión
+  const { data: session, status, update } = useSession()
 
-  // Mantenemos el usuario sincronizado con la sesión de NextAuth
+  // Sincronizamos el estado del usuario con la sesión de NextAuth
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
       setUser({
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // Usamos NextAuth para manejar el login
+      // NextAuth maneja la autenticación
       const result = await signIn("credentials", {
         email,
         password,
@@ -91,8 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.refresh()
   }
 
-  // Nueva función para actualizar el usuario cuando edite su perfil
-  // Actualiza tanto el estado local como la sesión de NextAuth
+  // Actualiza el usuario cuando se edita el perfil
+  // Modifica tanto el estado local como la sesión de NextAuth
   const updateUser = (updatedUser: User) => {
     setUser(updatedUser)
     update({ user: updatedUser })
@@ -105,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// Hook para acceder al contexto de autenticación
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {

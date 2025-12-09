@@ -1,8 +1,11 @@
+/* Importamos Tailwind CSS y animaciones */
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* Variante personalizada para modo oscuro */
 @custom-variant dark (&:is(.dark *));
 
+/* Variables CSS para el tema claro */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -39,6 +42,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* Variables CSS para el tema oscuro */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -74,9 +78,13 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* Configuración del tema para Tailwind */
 @theme inline {
+  /* Fuentes del sistema */
   --font-sans: 'Geist', 'Geist Fallback';
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  
+  /* Mapeo de colores del tema */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -96,15 +104,21 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  
+  /* Colores para gráficos */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  
+  /* Radios de bordes */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Colores del sidebar */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -115,6 +129,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Estilos base para toda la aplicación */
 @layer base {
   * {
     @apply border-border outline-ring/50;

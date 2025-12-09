@@ -52,11 +52,11 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 10 * 60, // la sesión dura 10 minutos
-    updateAge: 1 * 60, // se actualiza cada 1 minuto
+    maxAge: 10 * 60, // La sesión dura 10 minutos
+    updateAge: 1 * 60, // Se actualiza cada 1 minuto
   },
   jwt: {
-    maxAge: 10 * 60, // el token dura 10 minutos
+    maxAge: 10 * 60, // El token dura 10 minutos
   },
   pages: {
     signIn: '/acceso-usuarios',
@@ -64,7 +64,7 @@ export const authOptions: NextAuthOptions = {
     error: '/acceso-usuarios',
   },
   callbacks: {
-    // Este callback se ejecuta cada vez que se crea o actualiza el token
+    // Se ejecuta cada vez que se crea o actualiza el token
     async jwt({ token, user, trigger, session }) {
       // Si es un login nuevo, guardamos los datos del usuario en el token
       if (user) {
@@ -74,8 +74,8 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role || 'user'
       }
       
-      // Si se actualizó la sesión manualmente (desde updateUser en auth-provider)
-      // esto permite que cuando el usuario edite su perfil, se actualice el nombre en el header
+      // Si se actualizó la sesión manualmente (cuando el usuario edita su perfil)
+      // esto permite actualizar el nombre que se muestra en el header
       if (trigger === 'update' && session) {
         token.name = session.user.name
         token.email = session.user.email
@@ -84,8 +84,8 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     
-    // Este callback se ejecuta cada vez que se accede a la sesión
-    // convierte el token en un objeto de sesión que podemos usar en la app
+    // Se ejecuta cada vez que se accede a la sesión
+    // Convierte el token en un objeto de sesión que usamos en la app
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string

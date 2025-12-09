@@ -25,23 +25,25 @@ export function ProductCard({ product }: ProductCardProps) {
   const hasMultipleSizes = product.sizes && product.sizes.length > 1
   const hasMultipleColors = product.colors && product.colors.length > 1
 
-  // ✅ Selección automática si hay solo una talla o color
+  // Si solo hay una opción de talla o color, la seleccionamos automáticamente
   useEffect(() => {
     if (product.sizes?.length === 1) setSelectedSize(product.sizes[0])
     if (product.colors?.length === 1) setSelectedColor(product.colors[0])
   }, [product.sizes, product.colors])
 
   const handleAddToCart = () => {
+    // Verificamos que se haya seleccionado talla si hay opciones
     if (hasSizes && !selectedSize) {
       setWarning("Por favor selecciona una talla antes de agregar al carrito.")
       return
     }
+    // Verificamos que se haya seleccionado color si hay opciones
     if (hasColors && !selectedColor) {
       setWarning("Por favor selecciona un color antes de agregar al carrito.")
       return
     }
 
-    // ✅ CAMBIO AQUÍ: usar "talla" y "color" en lugar de "selectedSize" y "selectedColor"
+    // Agregamos el producto al carrito con la talla y color seleccionados
     addItem({
       ...product,
       talla: selectedSize,
@@ -51,12 +53,13 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const closeWarning = () => setWarning(null)
 
-  // ✅ Enlace al producto con talla y color seleccionados
+  // Construimos el link con los parámetros de talla y color
   const productLink = `/producto/${product.id}?talla=${encodeURIComponent(selectedSize)}&color=${encodeURIComponent(selectedColor)}`
 
   return (
     <>
       <Card className="group overflow-hidden hover:shadow-lg transition-shadow relative">
+        {/* Imagen del producto - clickeable */}
         <Link href={productLink}>
           <div className="relative aspect-square overflow-hidden bg-muted">
             <Image
@@ -69,6 +72,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </Link>
 
         <CardContent className="p-4 space-y-2">
+          {/* Nombre del producto - clickeable */}
           <Link href={productLink}>
             <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
               {product.name}
@@ -77,7 +81,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="text-sm text-muted-foreground">{product.category}</p>
           <p className="text-xl font-bold">₡{product.price.toLocaleString()}</p>
 
-          {/* Selectores uno al lado del otro */}
+          {/* Selectores de talla y color lado a lado */}
           <div className="flex gap-2 mt-2">
             {hasSizes && (
               <Select value={selectedSize} onValueChange={setSelectedSize}>
@@ -112,12 +116,13 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardContent>
 
         <CardFooter className="p-4 pt-0 flex-col items-start gap-2">
+          {/* Botón para agregar al carrito */}
           <Button className="w-full" onClick={handleAddToCart}>
             <ShoppingCart className="h-4 w-4 mr-2" />
             Agregar al carrito
           </Button>
           
-          {/* ✅ SKU debajo del botón, alineado a la izquierda, color discreto */}
+          {/* SKU del producto si existe */}
           {product.sku && (
             <span className="text-xs text-gray-500">
               {product.sku}
@@ -126,7 +131,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardFooter>
       </Card>
 
-      {/* ⚠️ Modal de advertencia centrado */}
+      {/* Modal de advertencia cuando falta seleccionar algo */}
       {warning && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"

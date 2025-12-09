@@ -7,6 +7,7 @@ export function CustomizationCTA() {
     <section className="py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto">
+          {/* Título de la sección */}
           <div className="text-center mb-12">
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4">Diseña tu prenda ideal</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -14,6 +15,7 @@ export function CustomizationCTA() {
             </p>
           </div>
 
+          {/* Características principales */}
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
@@ -46,6 +48,7 @@ export function CustomizationCTA() {
             </div>
           </div>
 
+          {/* Botón de acción */}
           <div className="text-center">
             <Button asChild size="lg" className="text-base">
               <Link href="/personalizar">Solicitar personalización</Link>

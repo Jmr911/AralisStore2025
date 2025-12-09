@@ -6,9 +6,10 @@ import { ArrowUp } from "lucide-react"
 export function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false)
 
+  // Detectamos cuándo el usuario ha hecho scroll para mostrar el botón
   useEffect(() => {
     const toggleVisibility = () => {
-      // Show button when page is scrolled down 300px
+      // Mostramos el botón cuando se ha bajado más de 300px
       if (window.scrollY > 300) {
         setIsVisible(true)
       } else {
@@ -18,11 +19,13 @@ export function ScrollToTop() {
 
     window.addEventListener("scroll", toggleVisibility)
 
+    // Limpiamos el listener al desmontar
     return () => {
       window.removeEventListener("scroll", toggleVisibility)
     }
   }, [])
 
+  // Función que lleva al usuario de vuelta arriba con animación suave
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,

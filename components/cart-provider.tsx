@@ -18,6 +18,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
+  // Agrega un producto al carrito o incrementa su cantidad si ya existe
   const addItem = (product: Product) => {
     setItems((currentItems) => {
       const existingItem = currentItems.find((item) => item.id === product.id)
@@ -30,10 +31,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  // Elimina un producto del carrito
   const removeItem = (productId: string) => {
     setItems((currentItems) => currentItems.filter((item) => item.id !== productId))
   }
 
+  // Actualiza la cantidad de un producto específico
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) return
     setItems((currentItems) =>
@@ -41,9 +44,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     )
   }
 
+  // Vacía todo el carrito
   const clearCart = () => setItems([])
 
+  // Cuenta total de productos en el carrito
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+  
+  // Precio total del carrito
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   return (
@@ -63,6 +70,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// Hook para usar el carrito en cualquier componente
 export function useCart() {
   const context = useContext(CartContext)
   if (!context) throw new Error("useCart must be used within a CartProvider")

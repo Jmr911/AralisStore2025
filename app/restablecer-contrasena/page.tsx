@@ -17,12 +17,13 @@ import {
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-// Componente interno que usa useSearchParams
+// Componente que maneja el formulario de reseteo
 function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
 
+  // Estados para el formulario y validaciones
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [mostrarNueva, setMostrarNueva] = useState(false)
@@ -33,7 +34,7 @@ function ResetPasswordContent() {
   const [tokenValido, setTokenValido] = useState<boolean | null>(null)
   const [erroresValidacion, setErroresValidacion] = useState<string[]>([])
 
-  // Verificar si el token es válido al cargar
+  // Verificamos si el token que viene en la URL es válido
   useEffect(() => {
     if (!token) {
       setTokenValido(false)
@@ -44,7 +45,7 @@ function ResetPasswordContent() {
     setTokenValido(true)
   }, [token])
 
-  // Validar nueva contraseña en tiempo real
+  // Validamos la contraseña cada vez que el usuario escribe
   useEffect(() => {
     if (!password) {
       setErroresValidacion([])
@@ -72,7 +73,7 @@ function ResetPasswordContent() {
     setErroresValidacion(errores)
   }, [password])
 
-  // Calcular fortaleza de la contraseña
+  // Calculamos qué tan fuerte es la contraseña
   const calcularFortaleza = (): { nivel: number; texto: string; color: string } => {
     if (!password) return { nivel: 0, texto: '', color: 'bg-muted' }
 
@@ -95,7 +96,7 @@ function ResetPasswordContent() {
     e.preventDefault()
     setError("")
 
-    // Validaciones
+    // Verificamos que la contraseña cumpla todos los requisitos
     if (erroresValidacion.length > 0) {
       setError('Por favor, cumple con todos los requisitos de contraseña')
       return
@@ -109,6 +110,7 @@ function ResetPasswordContent() {
     setLoading(true)
 
     try {
+      // Enviamos la nueva contraseña al backend
       const response = await fetch("/api/password/restablecer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -119,6 +121,7 @@ function ResetPasswordContent() {
 
       if (response.ok) {
         setSuccess(true)
+        // Después de 3 segundos redirigimos al login
         setTimeout(() => {
           router.push("/acceso-usuarios")
         }, 3000)
@@ -132,6 +135,7 @@ function ResetPasswordContent() {
     }
   }
 
+  // Si el token no es válido, mostramos pantalla de error
   if (tokenValido === false) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -155,6 +159,7 @@ function ResetPasswordContent() {
     )
   }
 
+  // Si todo salió bien, mostramos mensaje de éxito
   if (success) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -178,6 +183,7 @@ function ResetPasswordContent() {
     )
   }
 
+  // Formulario principal para cambiar la contraseña
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -193,7 +199,7 @@ function ResetPasswordContent() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Mensaje de error */}
+              {/* Mostramos mensajes de error si los hay */}
               {error && (
                 <Alert variant="destructive">
                   <XCircle className="h-4 w-4" />
@@ -201,7 +207,7 @@ function ResetPasswordContent() {
                 </Alert>
               )}
 
-              {/* Nueva contraseña */}
+              {/* Campo para la nueva contraseña */}
               <div className="space-y-2">
                 <Label htmlFor="password">Nueva contraseña</Label>
                 <div className="relative">
@@ -228,7 +234,7 @@ function ResetPasswordContent() {
                   </button>
                 </div>
 
-                {/* Indicador de fortaleza */}
+                {/* Barra que muestra qué tan fuerte es la contraseña */}
                 {password && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs">
@@ -250,7 +256,7 @@ function ResetPasswordContent() {
                   </div>
                 )}
 
-                {/* Requisitos faltantes */}
+                {/* Lista de requisitos que faltan cumplir */}
                 {password && erroresValidacion.length > 0 && (
                   <div className="space-y-1 mt-2">
                     <p className="text-xs font-medium text-muted-foreground">Requisitos faltantes:</p>
@@ -263,7 +269,7 @@ function ResetPasswordContent() {
                   </div>
                 )}
 
-                {/* Todos los requisitos cumplidos */}
+                {/* Mensaje cuando todos los requisitos se cumplen */}
                 {password && erroresValidacion.length === 0 && (
                   <div className="flex items-center text-xs text-green-600 mt-2">
                     <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -272,7 +278,7 @@ function ResetPasswordContent() {
                 )}
               </div>
 
-              {/* Confirmar contraseña */}
+              {/* Campo para confirmar la contraseña */}
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
                 <div className="relative">
@@ -299,7 +305,7 @@ function ResetPasswordContent() {
                   </button>
                 </div>
 
-                {/* Indicador de coincidencia */}
+                {/* Indicador de si las contraseñas coinciden */}
                 {confirmPassword && (
                   <div className="flex items-center text-xs mt-2">
                     {password === confirmPassword ? (
@@ -339,7 +345,7 @@ function ResetPasswordContent() {
               </Button>
             </form>
 
-            {/* Consejos de seguridad */}
+            {/* Caja con los requisitos de contraseña */}
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <p className="text-xs font-medium text-muted-foreground mb-2">
                 Requisitos de contraseña:
@@ -375,7 +381,7 @@ function ResetPasswordContent() {
   )
 }
 
-// Componente principal que envuelve ResetPasswordContent en Suspense
+// Componente principal - necesitamos Suspense porque usamos useSearchParams
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={

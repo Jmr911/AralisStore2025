@@ -6,28 +6,28 @@ import { useSession, signOut } from "next-auth/react";
 export default function SessionWarning() {
   const { data: session, status } = useSession();
   const [showWarning, setShowWarning] = useState<boolean>(false);
-  const [timeRemaining, setTimeRemaining] = useState<number>(120); // 2 minutos
+  const [timeRemaining, setTimeRemaining] = useState<number>(120); // 2 minutos en segundos
 
   useEffect(() => {
+    // No mostramos nada si no hay sesión activa
     if (status !== "authenticated") {
       setShowWarning(false);
       return;
     }
 
-    // Configuración de tiempos
-    const SESSION_DURATION = 10 * 60 * 1000; // 10 minutos en milisegundos
-    const WARNING_TIME = 8 * 60 * 1000; // 8 minutos (mostrar warning 2 min antes)
+    // Configuración: la sesión dura 10 minutos total
+    const SESSION_DURATION = 10 * 60 * 1000; // 10 minutos
+    const WARNING_TIME = 8 * 60 * 1000; // Mostramos el aviso a los 8 minutos
 
-    // Guardar timestamp del login
     const loginTime = Date.now();
 
-    // Timer para mostrar advertencia a los 8 minutos
+    // Timer que muestra la advertencia 2 minutos antes de expirar
     const warningTimer = setTimeout(() => {
       setShowWarning(true);
       setTimeRemaining(120); // 2 minutos restantes
     }, WARNING_TIME);
 
-    // Timer para cerrar sesión automáticamente a los 10 minutos
+    // Timer que cierra la sesión automáticamente a los 10 minutos
     const logoutTimer = setTimeout(() => {
       signOut({ 
         callbackUrl: '/login',
@@ -35,14 +35,14 @@ export default function SessionWarning() {
       });
     }, SESSION_DURATION);
 
-    // Cleanup
+    // Limpiamos los timers cuando el componente se desmonta
     return () => {
       clearTimeout(warningTimer);
       clearTimeout(logoutTimer);
     };
-  }, [status]); // Solo se ejecuta cuando cambia el estado de autenticación
+  }, [status]);
 
-  // Contador regresivo cuando aparece la advertencia
+  // Contador regresivo que actualiza cada segundo
   useEffect(() => {
     if (!showWarning) return;
 
@@ -59,16 +59,19 @@ export default function SessionWarning() {
     return () => clearInterval(interval);
   }, [showWarning]);
 
+  // No renderizamos nada si no hay que mostrar advertencia
   if (!showWarning || status !== "authenticated") {
     return null;
   }
 
+  // Calculamos minutos y segundos para mostrar
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = timeRemaining % 60;
 
   return (
     <div className="fixed top-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg z-50 max-w-md animate-pulse">
       <div className="flex items-start gap-3">
+        {/* Icono de advertencia */}
         <div className="flex-shrink-0">
           <svg
             className="h-6 w-6 text-red-500"
@@ -83,6 +86,8 @@ export default function SessionWarning() {
             />
           </svg>
         </div>
+        
+        {/* Contenido del mensaje */}
         <div className="flex-1">
           <p className="text-sm font-bold">⚠️ Tu sesión está por expirar</p>
           <p className="text-lg font-mono font-bold mt-2">
@@ -91,6 +96,7 @@ export default function SessionWarning() {
           <p className="text-xs mt-2">
             Por seguridad, tu sesión se cerrará automáticamente. Guarda tu trabajo.
           </p>
+          {/* Botón para renovar la sesión */}
           <button
             onClick={() => window.location.reload()}
             className="mt-3 px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 transition-colors"
@@ -98,6 +104,8 @@ export default function SessionWarning() {
             Renovar sesión ahora
           </button>
         </div>
+        
+        {/* Botón para cerrar la advertencia */}
         <button
           onClick={() => setShowWarning(false)}
           className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"

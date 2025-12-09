@@ -35,6 +35,7 @@ export default function ListaFormularios() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Cargamos los formularios cuando se monta el componente
   useEffect(() => {
     async function cargarFormularios() {
       try {
@@ -57,6 +58,7 @@ export default function ListaFormularios() {
     cargarFormularios()
   }, [])
 
+  // Pantalla de carga
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -67,6 +69,7 @@ export default function ListaFormularios() {
     )
   }
 
+  // Pantalla de error
   if (error) {
     return (
       <div className="p-8 bg-red-50 border border-red-200 rounded-lg">
@@ -77,7 +80,7 @@ export default function ListaFormularios() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      {/* Header con total */}
+      {/* Encabezado con contador total */}
       <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-gray-800">
           Formularios Recibidos
@@ -87,15 +90,17 @@ export default function ListaFormularios() {
         </p>
       </div>
       
+      {/* Mensaje si no hay formularios */}
       {formularios.length === 0 ? (
         <div className="p-12 bg-white rounded-lg shadow text-center">
           <div className="text-6xl mb-4">📭</div>
           <p className="text-gray-500 text-lg">No hay formularios guardados todavía.</p>
         </div>
       ) : (
+        // Lista de formularios
         <div className="grid grid-cols-1 gap-6">
           {formularios.map((form) => {
-            // Normalizar campos (porque pueden venir con nombres diferentes)
+            // Normalizamos los campos porque pueden venir con diferentes nombres
             const nombre = form.name || form.nombre
             const email = form.email || form.correo
             const telefono = form.phone || form.telefono
@@ -107,7 +112,7 @@ export default function ListaFormularios() {
                 key={form._id} 
                 className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow"
               >
-                {/* Header del card */}
+                {/* Cabecera del formulario con tipo y fecha */}
                 <div className="flex justify-between items-start mb-4 pb-4 border-b">
                   <div>
                     <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${
@@ -117,6 +122,7 @@ export default function ListaFormularios() {
                     }`}>
                       {form.tipo === 'personalizacion' ? '✨ Personalización' : '💬 Contacto'}
                     </span>
+                    {/* Etiqueta de urgente si aplica */}
                     {(form.wantsContact || form.urgente) && (
                       <span className="ml-2 inline-block px-3 py-1 bg-red-100 text-red-800 text-sm font-semibold rounded-full">
                         ⚠️ URGENTE
@@ -140,7 +146,7 @@ export default function ListaFormularios() {
                   </div>
                 </div>
 
-                {/* Contenido del formulario */}
+                {/* Datos del cliente */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
@@ -171,7 +177,7 @@ export default function ListaFormularios() {
                     </p>
                   </div>
 
-                  {/* Campos específicos de personalización */}
+                  {/* Campos exclusivos de personalización */}
                   {isPersonalizacion && (
                     <>
                       {(form.garmentType || form.prenda) && (
@@ -199,7 +205,7 @@ export default function ListaFormularios() {
                   )}
                 </div>
 
-                {/* Descripción/Mensaje */}
+                {/* Descripción o mensaje del cliente */}
                 {(form.description || form.descripcion || form.message) && (
                   <div className="mt-4 pt-4 border-t">
                     <p className="text-xs text-gray-500 uppercase font-semibold mb-2">
@@ -211,7 +217,7 @@ export default function ListaFormularios() {
                   </div>
                 )}
 
-                {/* Medidas */}
+                {/* Medidas proporcionadas */}
                 {(form.measurements || form.medidas) && (
                   <div className="mt-4 pt-4 border-t">
                     <p className="text-xs text-gray-500 uppercase font-semibold mb-2">
@@ -223,7 +229,7 @@ export default function ListaFormularios() {
                   </div>
                 )}
 
-                {/* Envío de imágenes */}
+                {/* Indicador si desea enviar imágenes */}
                 {(form.wantsToSendImages || form.desea_enviar_imagenes) && (
                   <div className="mt-4 pt-4 border-t">
                     <p className="text-sm text-purple-700 font-medium flex items-center">

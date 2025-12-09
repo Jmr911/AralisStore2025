@@ -32,6 +32,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
 
     return (
       <div className="relative">
+        {/* Campo de contraseña con espacio para el botón */}
         <Input
           ref={ref}
           id={id}
@@ -44,6 +45,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           autoComplete={autoComplete}
           className="pr-10"
         />
+        {/* Botón para mostrar/ocultar la contraseña */}
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}

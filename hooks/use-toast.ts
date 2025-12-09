@@ -1,12 +1,12 @@
 'use client'
 
-// Inspired by react-hot-toast library
+// Sistema de notificaciones toast inspirado en react-hot-toast
 import * as React from 'react'
 
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast'
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 1 // Máximo de toasts visibles a la vez
+const TOAST_REMOVE_DELAY = 1000000 // Tiempo antes de remover un toast del DOM
 
 type ToasterToast = ToastProps & {
   id: string
@@ -15,6 +15,7 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
+// Tipos de acciones que pueden ocurrir con los toasts
 const actionTypes = {
   ADD_TOAST: 'ADD_TOAST',
   UPDATE_TOAST: 'UPDATE_TOAST',
@@ -24,6 +25,7 @@ const actionTypes = {
 
 let count = 0
 
+// Genera un ID único para cada toast
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
@@ -53,8 +55,10 @@ interface State {
   toasts: ToasterToast[]
 }
 
+// Mapa de timeouts para cada toast
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
+// Agrega un toast a la cola de remoción
 const addToRemoveQueue = (toastId: string) => {
   if (toastTimeouts.has(toastId)) {
     return
@@ -71,6 +75,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
+// Reducer que maneja todas las acciones de los toasts
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'ADD_TOAST':
@@ -90,8 +95,7 @@ export const reducer = (state: State, action: Action): State => {
     case 'DISMISS_TOAST': {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
+      // Agrega el toast a la cola de remoción
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -126,10 +130,13 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
+// Lista de componentes que escuchan cambios en el estado
 const listeners: Array<(state: State) => void> = []
 
+// Estado en memoria compartido entre todos los componentes
 let memoryState: State = { toasts: [] }
 
+// Despacha una acción y notifica a todos los listeners
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)
   listeners.forEach((listener) => {
@@ -139,6 +146,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, 'id'>
 
+// Función principal para crear y mostrar un toast
 function toast({ ...props }: Toast) {
   const id = genId()
 
@@ -168,12 +176,15 @@ function toast({ ...props }: Toast) {
   }
 }
 
+// Hook para usar el sistema de toasts en componentes
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
   React.useEffect(() => {
+    // Nos suscribimos a cambios en el estado
     listeners.push(setState)
     return () => {
+      // Nos desuscribimos al desmontar
       const index = listeners.indexOf(setState)
       if (index > -1) {
         listeners.splice(index, 1)

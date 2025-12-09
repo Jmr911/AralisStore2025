@@ -15,24 +15,25 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
-  const pathname = usePathname() // Hook para detectar la ruta actual
+  const pathname = usePathname()
 
-  // Mostramos diferentes enlaces según si es admin o usuario normal
+  // Cambiamos el enlace de pedidos según el rol del usuario
   const pedidosUrl = user?.role === 'admin' ? '/admin/pedidos' : '/mis-pedidos'
   const pedidosTexto = user?.role === 'admin' ? 'Gestión de Pedidos' : 'Mis Pedidos'
 
-  // Función para determinar si un link está activo
+  // Verifica si un link está activo comparando con la ruta actual
   const isActive = (path: string) => pathname === path
 
+  // Efecto para ocultar/mostrar el header al hacer scroll
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
 
-      // Mostramos el header cuando está en la parte superior
+      // Siempre visible en la parte superior
       if (currentScrollY < 10) {
         setIsVisible(true)
       }
-      // Ocultamos cuando hace scroll hacia abajo, mostramos cuando sube
+      // Ocultamos al bajar, mostramos al subir
       else if (currentScrollY > lastScrollY) {
         setIsVisible(false)
       } else {
@@ -54,7 +55,7 @@ export function Header() {
     >
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-          {/* Logo */}
+          {/* Logo de Aralis */}
           <Link href="/" className="flex items-center justify-start">
             <Image
               src="/aralis-logo-sin-slogan.png"
@@ -65,7 +66,7 @@ export function Header() {
             />
           </Link>
 
-          {/* Menú de navegación en desktop */}
+          {/* Menú de navegación principal - solo visible en desktop */}
           <nav className="hidden md:flex items-center gap-8 justify-center">
             <Link 
               href="/catalogo" 
@@ -99,13 +100,13 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* Iconos de acciones */}
+          {/* Iconos de la derecha */}
           <div className="flex items-center gap-2 justify-end">
             {user ? (
               <div className="hidden md:flex items-center gap-2">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">Hola, {user.name}</span>
                 
-                {/* Botón de pedidos (cambia según el rol) */}
+                {/* Link a pedidos - cambia según si es admin o usuario */}
                 <Link href={pedidosUrl}>
                   <Button variant="ghost" size="sm">
                     {user.role === 'admin' ? (
@@ -118,6 +119,7 @@ export function Header() {
                 </Link>
               </div>
             ) : (
+              // Link de ingresar si no hay usuario logueado
               <Link
                 href="/acceso-usuarios"
                 className="hidden md:flex items-center gap-2 text-sm hover:text-primary transition-colors"
@@ -127,7 +129,7 @@ export function Header() {
               </Link>
             )}
 
-            {/* Carrito de compras */}
+            {/* Icono del carrito con contador */}
             <Link href="/carrito" className="relative">
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="h-5 w-5" />
@@ -139,7 +141,7 @@ export function Header() {
               </Button>
             </Link>
 
-            {/* Botón para editar perfil */}
+            {/* Botón para editar perfil - solo si hay usuario */}
             {user && (
               <Link href="/perfil/editar" title="Editar perfil" className="hidden md:block">
                 <Button variant="ghost" size="icon">
@@ -148,7 +150,7 @@ export function Header() {
               </Link>
             )}
 
-            {/* Botón para cambiar contraseña */}
+            {/* Botón para cambiar contraseña - solo si hay usuario */}
             {user && (
               <Link href="/perfil/cambiar-contrasena" title="Cambiar contraseña" className="hidden md:block">
                 <Button variant="ghost" size="icon">
@@ -157,14 +159,14 @@ export function Header() {
               </Link>
             )}
 
-            {/* Botón de cerrar sesión */}
+            {/* Botón de cerrar sesión - solo si hay usuario */}
             {user && (
               <Button variant="ghost" size="icon" onClick={logout} title="Cerrar sesión" className="hidden md:flex">
                 <LogOut className="h-4 w-4" />
               </Button>
             )}
 
-            {/* Botón del menú móvil */}
+            {/* Botón hamburguesa para menú móvil */}
             <Button
               variant="ghost"
               size="icon"
@@ -176,7 +178,7 @@ export function Header() {
           </div>
         </div>
 
-        {/* Menú móvil */}
+        {/* Menú desplegable para móviles */}
         {mobileMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 flex flex-col gap-4 border-t pt-4">
             <Link 
@@ -229,7 +231,7 @@ export function Header() {
                   </Button>
                 </Link>
                 
-                {/* Pedidos en móvil (cambia según el rol) */}
+                {/* Pedidos en móvil */}
                 <Link href={pedidosUrl}>
                   <Button variant="ghost" size="sm" className="justify-start w-full">
                     {user.role === 'admin' ? (

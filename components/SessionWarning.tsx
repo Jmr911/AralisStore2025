@@ -9,17 +9,17 @@ export default function SessionWarning() {
   const [timeRemaining, setTimeRemaining] = useState<number>(120); // 2 minutos
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
 
-  // Configuración de tiempos
-  const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutos de inactividad
-  const WARNING_TIME = 2 * 60 * 1000; // Advertir 2 minutos antes
+  // Configuración: 10 minutos de inactividad total, advertencia 2 minutos antes
+  const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutos
+  const WARNING_TIME = 2 * 60 * 1000; // 2 minutos
 
-  // Función para resetear el temporizador de inactividad
+  // Reinicia el temporizador cuando hay actividad del usuario
   const resetInactivityTimer = useCallback(() => {
     setLastActivity(Date.now());
     setShowWarning(false);
   }, []);
 
-  // Detectar actividad del usuario
+  // Detectamos cualquier actividad del usuario para resetear el timer
   useEffect(() => {
     if (status !== "authenticated") return;
 
@@ -32,11 +32,12 @@ export default function SessionWarning() {
       'click',
     ];
 
-    // Resetear timer en cualquier actividad
+    // Agregamos listeners para cada evento
     events.forEach(event => {
       document.addEventListener(event, resetInactivityTimer);
     });
 
+    // Limpiamos los listeners al desmontar
     return () => {
       events.forEach(event => {
         document.removeEventListener(event, resetInactivityTimer);
@@ -44,7 +45,7 @@ export default function SessionWarning() {
     };
   }, [status, resetInactivityTimer]);
 
-  // Verificar inactividad cada segundo
+  // Verificamos la inactividad cada segundo
   useEffect(() => {
     if (status !== "authenticated") return;
 
@@ -53,7 +54,7 @@ export default function SessionWarning() {
       const timeSinceLastActivity = now - lastActivity;
       const timeUntilLogout = INACTIVITY_TIMEOUT - timeSinceLastActivity;
 
-      // Si quedan menos de 2 minutos, mostrar advertencia
+      // Mostramos advertencia si quedan menos de 2 minutos
       if (timeUntilLogout <= WARNING_TIME && timeUntilLogout > 0) {
         setShowWarning(true);
         setTimeRemaining(Math.floor(timeUntilLogout / 1000));
@@ -61,10 +62,10 @@ export default function SessionWarning() {
         setShowWarning(false);
       }
 
-      // Si se acabó el tiempo, cerrar sesión
+      // Cerramos sesión si se acabó el tiempo de inactividad
       if (timeSinceLastActivity >= INACTIVITY_TIMEOUT) {
         signOut({ 
-          callbackUrl: '/acceso-usuarios', // ✅ CAMBIADO de '/login'
+          callbackUrl: '/acceso-usuarios',
           redirect: true 
         });
       }
@@ -73,6 +74,7 @@ export default function SessionWarning() {
     return () => clearInterval(interval);
   }, [status, lastActivity, INACTIVITY_TIMEOUT, WARNING_TIME]);
 
+  // No mostramos nada si no hay advertencia o no hay sesión
   if (!showWarning || status !== "authenticated") {
     return null;
   }
@@ -84,6 +86,7 @@ export default function SessionWarning() {
     <div className="fixed top-4 right-4 bg-red-50 border border-red-200 rounded-lg shadow-lg z-50 max-w-sm">
       <div className="p-4">
         <div className="flex items-start gap-3">
+          {/* Icono de alerta */}
           <div className="flex-shrink-0">
             <svg
               className="h-6 w-6 text-red-500"
@@ -98,6 +101,8 @@ export default function SessionWarning() {
               />
             </svg>
           </div>
+          
+          {/* Contenido del aviso */}
           <div className="flex-1">
             <p className="text-sm font-semibold text-red-800">
               Sesión inactiva
@@ -108,6 +113,7 @@ export default function SessionWarning() {
             <p className="text-xs text-red-700 mt-2">
               Por inactividad, tu sesión se cerrará automáticamente.
             </p>
+            {/* Botón para mantener la sesión activa */}
             <button
               onClick={resetInactivityTimer}
               className="mt-3 w-full px-3 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 transition-colors"
@@ -115,6 +121,8 @@ export default function SessionWarning() {
               Continuar con mi sesión
             </button>
           </div>
+          
+          {/* Botón para cerrar el aviso temporalmente */}
           <button
             onClick={() => setShowWarning(false)}
             className="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors"

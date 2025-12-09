@@ -1,27 +1,28 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Archivo .gitignore - Define qué archivos y carpetas NO subir a Git
+# Ver: https://help.github.com/articles/ignoring-files/
 
-# dependencies
+# Dependencias de npm/yarn/pnpm
 /node_modules
 
-# next.js
+# Archivos generados por Next.js
 /.next/
 /out/
 
-# production
+# Build de producción
 /build
 
-# debug
+# Logs de depuración
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
+# Archivos de variables de entorno (contienen información sensible)
 .env*
 
-# vercel
+# Configuración de Vercel
 .vercel
 
-# typescript
+# Archivos de TypeScript generados automáticamente
 *.tsbuildinfo
 next-env.d.ts

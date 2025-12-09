@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Config de los emails
+// Configuración de colores y datos de la marca para los emails
 const EMAIL_CONFIG = {
   from: 'Aralis <noreply@aralisstore.com>',
   brandColor: '#5D4037',
@@ -12,10 +12,10 @@ const EMAIL_CONFIG = {
   brandName: 'Aralis',
   supportEmail: 'jmr91_@hotmail.com',
   whatsapp: '+506 8319-5781',
-  adminEmail: 'AralisModa@hotmail.com' // Email para notificaciones admin
+  adminEmail: 'AralisModa@hotmail.com' // Email donde llegan las notificaciones de admin
 }
 
-// Función helper para notificar al admin sobre eventos importantes
+// Función helper que envía notificaciones al admin sobre eventos importantes
 async function notificarAdmin(asunto: string, contenidoHTML: string, contenidoTexto: string) {
   try {
     await resend.emails.send({
@@ -31,10 +31,10 @@ async function notificarAdmin(asunto: string, contenidoHTML: string, contenidoTe
   }
 }
 
-// Envía email de recuperación de contraseña
+// Envía email cuando un usuario solicita recuperar su contraseña
 export async function enviarEmailRecuperacion(email: string, token: string) {
   try {
-    // URL con el token para restablecer
+    // Construimos la URL con el token único para restablecer
     const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3002'}/restablecer-contrasena?token=${token}`
     
     const { data, error } = await resend.emails.send({
@@ -52,7 +52,7 @@ export async function enviarEmailRecuperacion(email: string, token: string) {
 
     console.log('Email de recuperación enviado a:', email)
 
-    // Notificar al admin
+    // Notificamos al admin de la solicitud
     await notificarAdmin(
       'Solicitud de recuperación de contraseña',
       `<p><strong>Usuario:</strong> ${email}<br><strong>Fecha:</strong> ${new Date().toLocaleString('es-CR')}</p>`,
@@ -70,7 +70,7 @@ export async function enviarEmailRecuperacion(email: string, token: string) {
   }
 }
 
-// Envía email de confirmación de cambio de contraseña
+// Envía email confirmando que la contraseña fue cambiada exitosamente
 export async function enviarEmailConfirmacionCambio(email: string, nombre?: string) {
   try {
     const { data, error } = await resend.emails.send({
@@ -88,7 +88,7 @@ export async function enviarEmailConfirmacionCambio(email: string, nombre?: stri
 
     console.log('Confirmación de cambio enviada a:', email)
 
-    // Notificar al admin
+    // Notificamos al admin del cambio de contraseña
     await notificarAdmin(
       'Contraseña actualizada',
       `<p><strong>Usuario:</strong> ${nombre || 'Sin nombre'}<br><strong>Email:</strong> ${email}<br><strong>Fecha:</strong> ${new Date().toLocaleString('es-CR')}</p>`,
@@ -106,7 +106,7 @@ export async function enviarEmailConfirmacionCambio(email: string, nombre?: stri
   }
 }
 
-// Envía email cuando el usuario cambia su perfil
+// Envía email cuando el usuario actualiza su perfil
 export async function enviarEmailCambioPerfil(
   emailDestino: string,
   nombre: string,
@@ -133,7 +133,7 @@ export async function enviarEmailCambioPerfil(
 
     console.log('Confirmación de cambio de perfil enviada a:', emailDestino)
 
-    // Armar lista de cambios para el admin
+    // Preparamos la lista de cambios para el admin
     const cambiosTexto = []
     if (cambios.nombreAnterior && cambios.nombreNuevo) {
       cambiosTexto.push(`Nombre: ${cambios.nombreAnterior} → ${cambios.nombreNuevo}`)
@@ -142,7 +142,7 @@ export async function enviarEmailCambioPerfil(
       cambiosTexto.push(`Email: ${cambios.emailAnterior} → ${cambios.emailNuevo}`)
     }
 
-    // Notificar al admin
+    // Notificamos al admin de los cambios
     await notificarAdmin(
       'Perfil actualizado',
       `<p><strong>Usuario:</strong> ${nombre}<br><strong>Email:</strong> ${emailDestino}<br><strong>Cambios:</strong><br>${cambiosTexto.map(c => `- ${c}`).join('<br>')}<br><strong>Fecha:</strong> ${new Date().toLocaleString('es-CR')}</p>`,
@@ -160,7 +160,7 @@ export async function enviarEmailCambioPerfil(
   }
 }
 
-// Envía email de bienvenida a nuevos usuarios
+// Envía email de bienvenida cuando se registra un nuevo usuario
 export async function enviarEmailBienvenida(email: string, nombre: string) {
   try {
     const { data, error } = await resend.emails.send({
@@ -178,7 +178,7 @@ export async function enviarEmailBienvenida(email: string, nombre: string) {
 
     console.log('Email de bienvenida enviado a:', email)
 
-    // Notificar al admin del nuevo registro
+    // Notificamos al admin del nuevo registro
     await notificarAdmin(
       'Nuevo usuario registrado',
       `<p><strong>Nombre:</strong> ${nombre}<br><strong>Email:</strong> ${email}<br><strong>Fecha:</strong> ${new Date().toLocaleString('es-CR')}</p>`,
@@ -196,10 +196,10 @@ export async function enviarEmailBienvenida(email: string, nombre: string) {
   }
 }
 
-// Envía email de confirmación de pedido
+// Envía email de confirmación cuando se realiza un pedido
 export async function enviarEmailPedido(pedido: any) {
   try {
-    // HTML de cada producto con sus detalles
+    // Generamos el HTML de cada producto con todos sus detalles
     const productosHTML = pedido.productos.map((prod: any) => `
       <div style="padding: 15px 0; border-bottom: 1px solid #E8E6DD;">
         <div style="font-weight: 600; color: #2C1810; margin-bottom: 6px; font-size: 15px;">${prod.nombre}</div>
@@ -226,12 +226,12 @@ export async function enviarEmailPedido(pedido: any) {
     console.log('Email de pedido enviado a:', pedido.email)
     console.log('Pedido número:', pedido.numeroPedido)
 
-    // Info de productos para el admin
+    // Preparamos info de productos para el admin (versión texto)
     const productosTexto = pedido.productos.map((prod: any) => 
       `${prod.nombre}${prod.sku ? ` [${prod.sku}]` : ''} - Cant: ${prod.cantidad}${prod.color ? ` (${prod.color})` : ''}${prod.talla ? ` Talla: ${prod.talla}` : ''}`
     ).join('\n')
 
-    // Notificar al admin del nuevo pedido
+    // Notificamos al admin del nuevo pedido con todos los detalles
     await notificarAdmin(
       `Nuevo Pedido #${pedido.numeroPedido}`,
       `
@@ -261,7 +261,7 @@ export async function enviarEmailPedido(pedido: any) {
   }
 }
 
-// Envía email cuando cambia el estado del pedido
+// Envía email cuando el estado de un pedido cambia
 export async function enviarEmailCambioEstado(pedido: any, nuevoEstado: string) {
   try {
     const { data, error } = await resend.emails.send({
@@ -281,7 +281,7 @@ export async function enviarEmailCambioEstado(pedido: any, nuevoEstado: string) 
     console.log('Pedido número:', pedido.numeroPedido)
     console.log('Nuevo estado:', nuevoEstado)
 
-    // Notificar al admin del cambio de estado
+    // Notificamos al admin del cambio de estado
     await notificarAdmin(
       `Cambio de Estado - Pedido #${pedido.numeroPedido}`,
       `
@@ -306,7 +306,8 @@ export async function enviarEmailCambioEstado(pedido: any, nuevoEstado: string) 
   }
 }
 
-// Plantillas HTML de los emails
+// ==================== PLANTILLAS HTML ====================
+// A continuación están las funciones que generan el HTML de cada email
 
 function generarHTMLRecuperacion(resetUrl: string): string {
   return `
@@ -1153,7 +1154,8 @@ function generarHTMLCambioEstado(pedido: any, nuevoEstado: string): string {
   `
 }
 
-// Versiones texto plano (para clientes de email sin HTML)
+// ==================== VERSIONES TEXTO PLANO ====================
+// Para clientes de email que no soportan HTML
 
 function generarTextoPlanoRecuperacion(resetUrl: string): string {
   return `

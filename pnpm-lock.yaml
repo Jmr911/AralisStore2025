@@ -1,5 +1,12 @@
+# Archivo de configuración de pnpm (pnpm-lock.yaml)
+# Define la versión del lockfile y configuraciones de pnpm
+
+# Versión del formato del archivo de bloqueo
 lockfileVersion: '9.0'
 
+# Configuraciones de pnpm
 settings:
+  # Instala automáticamente las dependencias peer cuando sea necesario
   autoInstallPeers: true
+  # Incluye los links simbólicos en el archivo de bloqueo
   excludeLinksFromLockfile: false
