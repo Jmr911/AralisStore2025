@@ -28,7 +28,7 @@ export default function AdminPedidosPage() {
   const [cambiosPendientes, setCambiosPendientes] = useState<Record<string, string>>({})
   const [guardando, setGuardando] = useState<Record<string, boolean>>({})
 
-  // Solo admins pueden acceder a esta página
+  // Unicamente los admins pueden acceder a esta página
   useEffect(() => {
     if (!cargando && (!user || user.role !== 'admin')) {
       console.log("Usuario no es admin, redirigiendo...")
@@ -82,7 +82,7 @@ export default function AdminPedidosPage() {
     }))
   }
 
-  // Envía el cambio de estado al servidor y notifica al cliente
+  // Envía el cambio de estado al server y notifica al cliente
   const guardarCambioEstado = async (pedidoId: string) => {
     const nuevoEstado = cambiosPendientes[pedidoId]
     
@@ -147,7 +147,7 @@ export default function AdminPedidosPage() {
     })
   }
 
-  // Filtra pedidos por estado y búsqueda
+  // Funcion que filtra pedidos por estado y búsqueda
   const pedidosFiltrados = pedidos.filter(p => {
     const pasaFiltroEstado = filtroEstado === "todos" || p.estado === filtroEstado
     

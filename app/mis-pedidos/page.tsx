@@ -16,7 +16,7 @@ export default function MisPedidosPage() {
   const [pedidos, setPedidos] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
 
-  // Redirige a login si el usuario no está autenticado
+  // Redirige a login si el usuario no está autenticado esto para que pueda registrarse
   useEffect(() => {
     if (!user && !cargando) {
       console.log("No hay usuario, redirigiendo a login...")
@@ -24,7 +24,7 @@ export default function MisPedidosPage() {
     }
   }, [user, router, cargando])
 
-  // Carga los pedidos del usuario cuando el componente se monta
+  // Carga los pedidos del usuario con el mismo correo actual
   useEffect(() => {
     if (user) {
       obtenerPedidos()

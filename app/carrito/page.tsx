@@ -20,7 +20,7 @@ export default function CarritoPage() {
   const { items, removeItem, updateQuantity, total } = useCart()
   const router = useRouter()
 
-  // Mostrar mensaje si el carrito está vacío
+  // Muestra el mensaje si el carrito está vacío
   if (items.length === 0) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -40,7 +40,7 @@ export default function CarritoPage() {
     )
   }
 
-  // Enviar cotización por WhatsApp
+  // Envia cotización por WhatsApp
   const handleSolicitudCotizacion = async () => {
     try {
       await fetch("/api/cotizacion", {
@@ -52,7 +52,7 @@ export default function CarritoPage() {
       console.error("Error al guardar la cotización:", error)
     }
 
-    // Construir mensaje para WhatsApp
+    // Construye mensaje para WhatsApp
     let mensaje = "*Cotización de Productos*\n=========================\n\n"
     items.forEach((item: CartItem) => {
       const subtotal = item.quantity * item.price

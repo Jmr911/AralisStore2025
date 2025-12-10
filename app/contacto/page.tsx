@@ -28,7 +28,7 @@ export default function ContactoPage() {
     e.preventDefault()
 
     try {
-      // Primero guardamos la información en la base de datos
+      // Primero guarda la información en la base de datos
       const res = await fetch("/api/guardar-formulario", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,17 +48,17 @@ export default function ContactoPage() {
       const data = await res.json()
       console.log("Formulario guardado:", data)
 
-      // Armamos el mensaje que se enviará por WhatsApp
+      // Se arma el mensaje que se enviará por WhatsApp
       const whatsappMessage = `Hola, mi nombre es ${formData.name}.\n\n${formData.message}` +
         (formData.email ? `\n\nDatos de contacto:\n- Email: ${formData.email}` : "") +
         (formData.phone ? `\n- Teléfono: ${formData.phone}` : "")
 
-      // Abrimos WhatsApp en una nueva pestaña con el mensaje prellenado
+      // Se abre WhatsApp en una nueva pestaña con el mensaje prellenado
       const whatsappNumber = "50683195781"
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
       window.open(whatsappUrl, "_blank")
 
-      // Mostramos el mensaje de confirmación y limpiamos el formulario después de 3 segundos
+      // Muestra el mensaje de confirmación y limpia el formulario después de 3 segundos
       setSubmitted(true)
       setTimeout(() => {
         setSubmitted(false)
@@ -111,7 +111,7 @@ export default function ContactoPage() {
                 <h2 className="font-serif text-3xl font-bold mb-6">Información de contacto</h2>
 
                 <div className="space-y-6 mb-8">
-                  {/* Dirección con enlace a Google Maps */}
+                  {/* Dirección con el enlace a Google Maps */}
                   <div className="flex gap-4">
                     <a href="https://maps.app.goo.gl/DZgQiJNQQu5jTSWo9" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 hover:opacity-80 transition-opacity">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -164,7 +164,7 @@ export default function ContactoPage() {
                   </div>
                 </div>
 
-                {/* Card destacado para WhatsApp */}
+                {/* Card para WhatsApp */}
                 <Card className="bg-primary text-primary-foreground">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -187,7 +187,7 @@ export default function ContactoPage() {
               <div>
                 <Card>
                   <CardContent className="p-6">
-                    {/* Si el formulario fue enviado, mostramos mensaje de confirmación */}
+                    {/* Si el formulario fue enviado, Se muestra el mensaje de confirmación */}
                     {submitted ? (
                       <div className="text-center py-8">
                         <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
@@ -195,7 +195,7 @@ export default function ContactoPage() {
                         <p className="text-muted-foreground leading-relaxed">Se abrirá WhatsApp con tu mensaje prellenado.</p>
                       </div>
                     ) : (
-                      // Si no ha sido enviado, mostramos el formulario
+                      // Si el formulario no ha sidoenviado, mostramos el formulario
                       <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                           <h2 className="font-serif text-2xl font-bold mb-2">Envíanos un mensaje</h2>

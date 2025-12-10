@@ -26,7 +26,7 @@ const provincias = [
   { value: "limon", label: "Limón" }
 ]
 
-// Cantones por provincia de Costa Rica
+// Cantones por provincias de Costa Rica
 const cantonesPorProvincia: Record<string, string[]> = {
   "san-jose": ["San José", "Escazú", "Desamparados", "Puriscal", "Tarrazú", "Aserrí", "Mora", "Goicoechea", "Santa Ana", "Alajuelita", "Vázquez de Coronado", "Acosta", "Tibás", "Moravia", "Montes de Oca", "Turrubares", "Dota", "Curridabat", "Pérez Zeledón", "León Cortés Castro"],
   "alajuela": ["Alajuela", "San Ramón", "Grecia", "San Mateo", "Atenas", "Naranjo", "Palmares", "Poás", "Orotina", "San Carlos", "Zarcero", "Sarchí", "Upala", "Los Chiles", "Guatuso", "Río Cuarto"],
@@ -70,7 +70,7 @@ export default function CheckoutPage() {
     setMounted(true)
   }, [])
 
-  // Autocompletar con datos del usuario logueado
+  // Funcion que ayuda a autocompletar con datos del usuario logueado
   useEffect(() => {
     if (user) {
       setFormData(prev => ({

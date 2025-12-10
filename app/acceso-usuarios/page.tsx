@@ -28,7 +28,7 @@ function LoginContent() {
   const searchParams = useSearchParams()
   const { login, register } = useAuth()
   
-  // Estados del formulario
+  // Muestro los Estados del formulario
   const [activeTab, setActiveTab] = useState("login")
   const [loginData, setLoginData] = useState({ email: "", password: "" })
   const [registerData, setRegisterData] = useState({
@@ -57,7 +57,7 @@ function LoginContent() {
     }
   }, [searchParams])
 
-  // Validar contraseña mientras el usuario escribe
+  // Se valida contraseña mientras el usuario escribe
   useEffect(() => {
     if (!registerData.password) {
       setErroresValidacion([])
@@ -85,7 +85,7 @@ function LoginContent() {
     setErroresValidacion(errores)
   }, [registerData.password])
 
-  // Calcular nivel de seguridad de la contraseña
+  // Calcula el nivel de seguridad de la contraseña
   const calcularFortaleza = (): { nivel: number; texto: string; color: string } => {
     if (!registerData.password) return { nivel: 0, texto: '', color: 'bg-muted' }
 
@@ -147,7 +147,7 @@ function LoginContent() {
       const registeredEmail = registerData.email
       setRegisterData({ name: "", email: "", password: "" })
 
-      // Cambiar a login con el email ya lleno
+      // Cambia a login con el email ya lleno
       setTimeout(() => {
         setSuccessMessage("")
         setLoginData({ email: registeredEmail, password: "" })
@@ -165,7 +165,7 @@ function LoginContent() {
       <Header />
       <main className="flex-1 flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md space-y-4">
-          {/* Banner de sesión expirada */}
+          {/* Muestra el Banner de la sesión expirada */}
           {sessionExpiredMessage && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm">
               <div className="flex items-start">
@@ -292,7 +292,7 @@ function LoginContent() {
                   </form>
                 </TabsContent>
 
-                {/* Tab de registro */}
+                {/* Datos para el registro */}
                 <TabsContent value="register">
                   <form onSubmit={handleRegister} className="space-y-4 mt-4">
                     <div className="space-y-2">
@@ -354,7 +354,7 @@ function LoginContent() {
                         </button>
                       </div>
 
-                      {/* Indicador de fortaleza */}
+                      {/* Indicador de fortaleza de la contrasena*/}
                       {registerData.password && (
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-xs">
@@ -376,7 +376,7 @@ function LoginContent() {
                         </div>
                       )}
 
-                      {/* Mostrar requisitos pendientes */}
+                      {/* Muestra los requisitos pendientes */}
                       {registerData.password && erroresValidacion.length > 0 && (
                         <div className="space-y-1 mt-2">
                           <p className="text-xs font-medium text-muted-foreground">Requisitos faltantes:</p>
@@ -389,7 +389,7 @@ function LoginContent() {
                         </div>
                       )}
 
-                      {/* Checkmark cuando todo está bien */}
+                      {/* Checkmark detecta cuando todo está bien */}
                       {registerData.password && erroresValidacion.length === 0 && (
                         <div className="flex items-center text-xs text-green-600 mt-2">
                           <CheckCircle2 className="h-3 w-3 mr-1" />
