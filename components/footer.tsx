@@ -2,14 +2,16 @@ import Link from "next/link"
 import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react"
 
 export function Footer() {
+  // Configuración para el enlace de WhatsApp
   const whatsappNumber = "50683195781"
   const whatsappMessage = encodeURIComponent("Hola, Aralis. Estoy interesado en obtener más información. ¿Podrían contactarme, por favor?")
 
   return (
     <footer className="bg-primary text-primary-foreground py-3 md:py-4">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-4 gap-4 mb-2">
-          {/* Información de la marca */}
+        <div className="grid md:grid-cols-5 gap-4 mb-2">
+          
+          {/* Columna 1: Información básica de la marca */}
           <div>
             <h3 className="font-serif text-sm font-bold mb-1">Aralis</h3>
             <p className="text-xs opacity-90 leading-snug">
@@ -17,7 +19,7 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Links de navegación */}
+          {/* Columna 2: Links principales del sitio */}
           <div>
             <h4 className="font-semibold mb-1 text-sm">Navegación</h4>
             <ul className="space-y-1 text-xs">
@@ -39,10 +41,11 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Información de contacto */}
+          {/* Columna 3: Datos de contacto con iconos y enlaces clickeables */}
           <div>
             <h4 className="font-semibold mb-1 text-sm">Contacto</h4>
             <ul className="space-y-1 text-xs">
+              {/* Ubicación con enlace a Google Maps */}
               <li className="flex items-start gap-2 opacity-90">
                 <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
                 <a 
@@ -54,6 +57,7 @@ export function Footer() {
                   Tacacori, Alajuela, Costa Rica
                 </a>
               </li>
+              {/* Teléfono con enlace tel: para llamar directamente */}
               <li className="flex items-center gap-2 opacity-90">
                 <Phone className="h-3 w-3 flex-shrink-0" />
                 <a 
@@ -63,6 +67,7 @@ export function Footer() {
                   +506 8319-5781
                 </a>
               </li>
+              {/* Email con enlace mailto */}
               <li className="flex items-center gap-2 opacity-90">
                 <Mail className="h-3 w-3 flex-shrink-0" />
                 <a 
@@ -75,10 +80,20 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Redes sociales */}
+          {/* Columna 4: Horario de atención */}
+          <div>
+            <h4 className="font-semibold mb-1 text-sm">Horario</h4>
+            <p className="text-xs opacity-90 leading-snug">
+              Lunes a Viernes<br />
+              7:00 AM - 4:30 PM
+            </p>
+          </div>
+
+          {/* Columna 5: Iconos de redes sociales */}
           <div>
             <h4 className="font-semibold mb-1 text-sm">Síguenos</h4>
             <div className="flex gap-3">
+              {/* Facebook */}
               <a 
                 href="https://www.facebook.com/profile.php?id=61571172749832"
                 target="_blank"
@@ -88,6 +103,7 @@ export function Footer() {
               >
                 <Facebook className="h-4 w-4" />
               </a>
+              {/* Instagram */}
               <a 
                 href="https://www.instagram.com/aralis.cr/"
                 target="_blank"
@@ -97,6 +113,7 @@ export function Footer() {
               >
                 <Instagram className="h-4 w-4" />
               </a>
+              {/* WhatsApp con icono personalizado en SVG */}
               <a 
                 href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
                 target="_blank"
@@ -112,7 +129,7 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
+        {/* Línea divisoria y copyright */}
         <div className="border-t border-primary-foreground/20 pt-2 text-center text-xs opacity-90">
           <p>&copy; {new Date().getFullYear()} Aralis. Todos los derechos reservados.</p>
         </div>

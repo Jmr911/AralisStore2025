@@ -207,7 +207,7 @@ export default function CheckoutPage() {
     }
 
     const urlMensaje = encodeURIComponent(mensaje)
-    const numeroWhatsApp = "83195781"
+    const numeroWhatsApp = "50683195781"
     window.open(`https://wa.me/${numeroWhatsApp}?text=${urlMensaje}`, "_blank")
   }
 

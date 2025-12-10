@@ -8,11 +8,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { MapPin, Phone, Mail, MessageCircle, CheckCircle } from "lucide-react"
+import { MapPin, Phone, Mail, MessageCircle, CheckCircle, Clock } from "lucide-react"
 import { DecorativeDivider } from "@/components/Division-decorativa"
 
 export default function ContactoPage() {
+  // Controla si el formulario ya fue enviado
   const [submitted, setSubmitted] = useState(false)
+  
+  // Almacena los datos que el usuario va escribiendo en el formulario
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -25,7 +28,7 @@ export default function ContactoPage() {
     e.preventDefault()
 
     try {
-      // Guarda el mensaje en la base de datos
+      // Primero guardamos la información en la base de datos
       const res = await fetch("/api/guardar-formulario", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -45,16 +48,17 @@ export default function ContactoPage() {
       const data = await res.json()
       console.log("Formulario guardado:", data)
 
-      // Construye el mensaje para WhatsApp
+      // Armamos el mensaje que se enviará por WhatsApp
       const whatsappMessage = `Hola, mi nombre es ${formData.name}.\n\n${formData.message}` +
         (formData.email ? `\n\nDatos de contacto:\n- Email: ${formData.email}` : "") +
         (formData.phone ? `\n- Teléfono: ${formData.phone}` : "")
 
+      // Abrimos WhatsApp en una nueva pestaña con el mensaje prellenado
       const whatsappNumber = "50683195781"
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
       window.open(whatsappUrl, "_blank")
 
-      // Muestra confirmación y limpia el formulario
+      // Mostramos el mensaje de confirmación y limpiamos el formulario después de 3 segundos
       setSubmitted(true)
       setTimeout(() => {
         setSubmitted(false)
@@ -72,7 +76,7 @@ export default function ContactoPage() {
       <Header />
       <main className="flex-1">
 
-        {/* Sección sobre nosotros */}
+        {/* Sección "Sobre Nosotros" con la información de la empresa */}
         <section className="pt-20 pb-12 md:pt-24 md:pb-16 bg-secondary/20">
           <div className="container mx-auto px-4 max-w-4xl text-center">
             <h1 className="font-serif text-4xl md:text-5xl font-bold mb-6">Sobre Nosotros</h1>
@@ -87,7 +91,7 @@ export default function ContactoPage() {
 
         <DecorativeDivider />
 
-        {/* Encabezado de contacto */}
+        {/* Título de la sección de contacto */}
         <section className="py-12 md:py-16 bg-secondary/30 text-center">
           <div className="container mx-auto px-4">
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4">Contáctanos</h2>
@@ -97,16 +101,17 @@ export default function ContactoPage() {
           </div>
         </section>
 
-        {/* Formulario y datos de contacto */}
+        {/* Área principal con la info de contacto a la izquierda y el formulario a la derecha */}
         <section className="py-12">
           <div className="container mx-auto px-4 max-w-5xl">
             <div className="grid md:grid-cols-2 gap-8">
 
-              {/* Información de contacto */}
+              {/* Columna izquierda: datos de contacto */}
               <div>
                 <h2 className="font-serif text-3xl font-bold mb-6">Información de contacto</h2>
 
                 <div className="space-y-6 mb-8">
+                  {/* Dirección con enlace a Google Maps */}
                   <div className="flex gap-4">
                     <a href="https://maps.app.goo.gl/DZgQiJNQQu5jTSWo9" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 hover:opacity-80 transition-opacity">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -119,6 +124,7 @@ export default function ContactoPage() {
                     </div>
                   </div>
 
+                  {/* Teléfono con enlace para llamar directamente */}
                   <div className="flex gap-4">
                     <a href="tel:+50683195781" className="flex-shrink-0 hover:opacity-80 transition-opacity">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -131,6 +137,7 @@ export default function ContactoPage() {
                     </div>
                   </div>
 
+                  {/* Email con enlace mailto */}
                   <div className="flex gap-4">
                     <a href="mailto:AralisModa@hotmail.com" className="flex-shrink-0 hover:opacity-80 transition-opacity">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -142,8 +149,22 @@ export default function ContactoPage() {
                       <p className="text-muted-foreground text-sm">AralisModa@hotmail.com</p>
                     </div>
                   </div>
+
+                  {/* Horario de atención */}
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Clock className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">Horario de atención</h3>
+                      <p className="text-muted-foreground text-sm">Lunes a Viernes<br />7:00 AM - 4:30 PM</p>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Card destacado para WhatsApp */}
                 <Card className="bg-primary text-primary-foreground">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -162,10 +183,11 @@ export default function ContactoPage() {
                 </Card>
               </div>
 
-              {/* Formulario de contacto */}
+              {/* Columna derecha: formulario de contacto */}
               <div>
                 <Card>
                   <CardContent className="p-6">
+                    {/* Si el formulario fue enviado, mostramos mensaje de confirmación */}
                     {submitted ? (
                       <div className="text-center py-8">
                         <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
@@ -173,12 +195,14 @@ export default function ContactoPage() {
                         <p className="text-muted-foreground leading-relaxed">Se abrirá WhatsApp con tu mensaje prellenado.</p>
                       </div>
                     ) : (
+                      // Si no ha sido enviado, mostramos el formulario
                       <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                           <h2 className="font-serif text-2xl font-bold mb-2">Envíanos un mensaje</h2>
                           <p className="text-sm text-muted-foreground">Completa el formulario y te contactaremos pronto.</p>
                         </div>
 
+                        {/* Campo nombre (obligatorio) */}
                         <div className="space-y-2">
                           <Label htmlFor="contact-name">Nombre *</Label>
                           <Input
@@ -190,6 +214,7 @@ export default function ContactoPage() {
                           />
                         </div>
 
+                        {/* Campo email (opcional) */}
                         <div className="space-y-2">
                           <Label htmlFor="contact-email">Correo electrónico (Opcional)</Label>
                           <Input
@@ -201,6 +226,7 @@ export default function ContactoPage() {
                           />
                         </div>
 
+                        {/* Campo teléfono - solo acepta números */}
                         <div className="space-y-2">
                           <Label htmlFor="contact-phone">Teléfono</Label>
                           <Input
@@ -215,6 +241,7 @@ export default function ContactoPage() {
                           />
                         </div>
 
+                        {/* Campo mensaje (obligatorio) */}
                         <div className="space-y-2">
                           <Label htmlFor="contact-message">Mensaje *</Label>
                           <Textarea
