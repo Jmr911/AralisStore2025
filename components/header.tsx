@@ -17,7 +17,7 @@ export function Header() {
   const [lastScrollY, setLastScrollY] = useState(0)
   const pathname = usePathname()
 
-  // Cambiamos el enlace de pedidos según el rol del usuario
+  // Cambia el enlace de pedidos según el rol del usuario
   const pedidosUrl = user?.role === 'admin' ? '/admin/pedidos' : '/mis-pedidos'
   const pedidosTexto = user?.role === 'admin' ? 'Gestión de Pedidos' : 'Mis Pedidos'
 
@@ -141,7 +141,7 @@ export function Header() {
               </Button>
             </Link>
 
-            {/* Botón para editar perfil - solo si hay usuario */}
+            {/* Botón para editar perfil - Solo si hay usuario */}
             {user && (
               <Link href="/perfil/editar" title="Editar perfil" className="hidden md:block">
                 <Button variant="ghost" size="icon">

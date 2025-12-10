@@ -1,6 +1,6 @@
 import type { Product } from "./types"
 
-// Catálogo completo de productos disponibles en la tienda
+// Catálogo de Productos disponibles en la tienda
 export const mockProducts: Product[] = [
   {
     id: "1",

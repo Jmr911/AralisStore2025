@@ -128,7 +128,7 @@ export default function EditarPerfil() {
         }
         
         updateUser(nuevoUsuario)
-        setEmailOriginal(email) // actualizamos el email original por si quiere hacer más cambios
+        setEmailOriginal(email) // Actualiza el email original por si quieren hacer más cambios
         
         // Después de 3 segundos, redirigimos al inicio
         setTimeout(() => {

@@ -6,7 +6,7 @@ const options = {}
 let client: MongoClient
 let clientPromise: Promise<MongoClient>
 
-// Verificamos que exista la URI de conexión a MongoDB
+// Verifica que exista la URI de conexión a MongoDB
 if (!uri) throw new Error("Falta MONGODB_URI en .env")
 
 if (process.env.NODE_ENV === "development") {
